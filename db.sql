@@ -32,8 +32,8 @@ CREATE TABLE `ipall_group` (
 -- 
 
 INSERT INTO `ipall_group` VALUES (1, 'Super Administratoren', 1, 1);
-INSERT INTO `ipall_group` VALUES (2, 'BRZ Administratoren', 1, 1);
-INSERT INTO `ipall_group` VALUES (3, 'BRZ User', 0, 0);
+INSERT INTO `ipall_group` VALUES (2, 'Company1 Administrators', 1, 1);
+INSERT INTO `ipall_group` VALUES (3, 'Company1 Users', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -171,13 +171,6 @@ CREATE TABLE `networks` (
   PRIMARY KEY  (`networks_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
 
--- 
--- Daten für Tabelle `networks`
--- 
-
-INSERT INTO `networks` VALUES (1, 'Internet', '', 1, 'internet', '8692:0');
-INSERT INTO `networks` VALUES (2, 'BMF', '', 1, 'brz-bmf', '8692:798');
-
 
 -- 
 -- Tabellenstruktur für Tabelle `nms_log`
@@ -211,12 +204,6 @@ CREATE TABLE `companies` (
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=2 ;
 
--- 
--- Daten für Tabelle `pcompanies`
--- 
-
-INSERT INTO `companies` VALUES (1, 'BRZ', 'Bundesrechenzentrum', 'Hintere Zollamtsstrasse', '4', '1030', 'Wien', 'AT', 8692, 'AS8692');
-
 
 -- 
 -- Tabellenstruktur für Tabelle `persons`
@@ -242,4 +229,3 @@ CREATE TABLE `persons` (
 -- 
 
 INSERT INTO `persons` VALUES (1, 'Super Administrator', '', '', '', '', '', 'admin', MD5('admin'), 0);
-INSERT INTO `persons` VALUES (2, 'BRZ dummy user', '', '', '', '', '', 'testuser', MD5('testuser'), 0);
