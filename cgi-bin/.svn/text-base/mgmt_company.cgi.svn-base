@@ -1,0 +1,98 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import Html as HTML
+import DBmy
+import IpallUser
+from Sessionclass import Session
+import os
+import cgi
+import cgitb; cgitb.enable()
+from Configobj import ConfigObj
+from Cookie import SimpleCookie
+from time import asctime
+
+
+def main():
+    """entry point for executing IPALL"""
+
+    ### definitions of variables
+    global conn
+
+    ### create database connection object
+    cfg = ConfigObj("ipall.cfg")
+    db_host = cfg['Database']['db_host']
+    db_user = cfg['Database']['db_user']
+    db_pw = cfg['Database']['db_pw']
+    db = cfg['Database']['db']
+    conn = DBmy.db(db_host, db_user, db_pw, db)
+
+    s = Session(conn)
+    current_user = s.check_user()
+    #company = s.check_cookie()
+    HTML.simple_header()
+    if current_user == "":
+        HTML.simple_redirect_header(cfg['Server']['web_dir'])
+        return
+    else:
+        HTML.body()
+
+    user = IpallUser.User(current_user)
+    group, company_id  = user.get_group_id()
+    rights = user.get_rights()
+    cgi_dir = cfg['Server']['cgi_dir']
+    ipall_dir = cfg['Server']['ipall_dir']
+
+    if group != 1 and rights[2] != 1:
+        HTML.restriction_message()
+        return
+
+    print """<br>"""
+    print """<table border=0 class=table_main>"""
+    print """<tr class=lightPurple3>"""
+    print """<td colspan=2 align=center class=TextPurpleBoldBig>&nbsp;</td>"""
+    print """</tr>"""
+    if group == 1:
+        print """<tr class=lightPurple3>
+            <td height=20 class=TextPurpleBold> IP@LL company management </td>
+            <td width=200 align=right><a href="%s/new_company.cgi" class=linkPurpleBold>new company</a></td></tr>""" % cgi_dir
+    else:
+        print """<tr class=lightPurple3>
+            <td height=20 class=TextPurpleBold> IP@LL company management </td>
+            <td width=200 align=right>&nbsp;</td></tr>"""
+    print """<tr><td colspan=2>&nbsp;</td></tr>"""
+    print """<tr><td colspan=2>"""
+
+    if group == 1:
+        sql_companies = """SELECT id, name FROM companies ORDER BY name"""
+    else:
+        sql_companies = """SELECT id, name FROM companies WHERE id=%u """ % int(company_id)
+    companies = conn.get_data(sql_companies)
+    print """<table border=0 class=table_dotted_row>"""
+    for c in companies:
+        print """<tr><td class=textPurpleBold>%s</td>""" % c[1]
+        print """<td width=200 align=right>"""
+        print """<img src="%s/images/editOff.png" id="edit" onMouseOver="mouseoverImage(this, '%s');"  
+            onMouseOut="mouseoverImage(this, '%s');" onClick="redirect_to_url('%s/company_edit.cgi?%s');" class=handlers />""" \
+                % ( ipall_dir, ipall_dir, ipall_dir, cgi_dir, str(c[0]) )
+        print """<img src="%s/images/deleteOff.png" id="delete" onMouseOver="mouseoverImage(this, '%s');"  
+            onMouseOut="mouseoverImage(this, '%s');" onClick="confirm_and_redirect('Do you really want to delete this company?', '%s/company_delete.cgi?%s');" class=handlers />""" \
+                % ( ipall_dir, ipall_dir, ipall_dir, cgi_dir, str(c[0]) )
+    print """</td></tr>"""
+    print """</table>"""
+        
+    print """</td></tr>"""
+    print """<tr><td colspan=2>&nbsp;</td></tr>"""
+    print """<tr><td colspan=2 align=right><a href="%s/mgmt.cgi" class=linkPurpleBold title="back"> << back </a></td></tr>""" % cgi_dir
+    print """</table>"""
+
+    HTML.main_footer()
+
+main()

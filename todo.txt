@@ -1,0 +1,35 @@
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 poiss.priv.at
+mailto:andi@poiss.priv.at
+*****************************
+
+
+*** 01.09.2010 ***
+    -> FIXED: company_delete: does not work
+        check if there are any users left
+
+*** 31.08.2010 ***
+    -> user_edit: change to "Super Administrator" group is not possible
+    -> FIXED: DB: field "address" in table "ipall_ip" is too small. 
+        change from BIGINT(20) to VARCHAR(250).
+
+*** 30.08.2010 ***
+    -> NEW FEATURE: network types should get a company id
+        "Super Admins" should be able to create commonly used network types
+    -> FIXED: log_viewer: only company admins should get access
+        and should not see other company's logs
+
+*** 26.08.2010 ***
+    -> FIXED: edit subnet: BGP peering is not possible on change of network type
+    -> FIXED: new nettype: redesign!
+    -> FIXED: new user: company field is too big (as super admin)
+    -> FIXED: delete user: not working
+
+*** 20.08.2010 ***
+    -> FIXED: company admin cannot execute "doubled IP report"
+    -> FIXED: new network should check, if the prefix already exists
+
+*** 18.8.2010 ***
+    -> network refresh should also word with subnets!
+    -> NEW FEATURE: show|hide ripe & config option should be stored

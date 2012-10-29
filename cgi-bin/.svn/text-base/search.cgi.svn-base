@@ -1,0 +1,222 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import Html as HTML
+import DBmy
+import IpallUser
+from Sessionclass import Session
+import IPy
+import re
+import os
+import cgi
+import cgitb; cgitb.enable()
+from Configobj import ConfigObj
+from Cookie import SimpleCookie
+
+
+def print_search_form():
+    """print a html form for searching in NMS database"""
+
+    print """<form name="ipall_search" method=POST action="search.cgi">"""
+    
+    print """<input type=hidden name=vrf value="%s">""" % str(vrf)
+    #print """</tr><tr>"""
+    
+    print """<table border=0 cellspacing=5 class=TextPurple>"""
+
+    print """<tr>"""
+    print """<td>Network address or<br>network description</td>"""
+    print """<td><input type=radio name=search_type value="network"></td>"""
+    print """<td rowspan=2><input type=text name=search_text onKeyUp="document.ipall_search.search_type[2].checked=false;" class=b_eingabefeld_226></td>"""
+    print """</tr>"""
+
+    print """<tr>"""
+    print """<td>Peering information</td>"""
+    print """<td><input type=radio name=search_type value="peering"></td>"""
+    print """</tr>"""
+    
+    print """<tr>"""
+    print """<td colspan=3 align=left>&nbsp;</td>"""
+    print """</tr>"""
+    print """<tr>"""
+    print """<td>Allocated network type</td>"""
+    print """<td><input type=radio id="search_type" name=search_type value="service"></td>"""
+    print """<td><select name=net_type onChange="document.ipall_search.search_type[2].checked=true;" class=b_eingabefeld_226>"""
+    print """<option value=0>&nbsp;</option>"""
+    all_types = get_net_types()
+    for t in all_types:
+        print """<option value=%u>%s</option>""" % (t[0], t[1])
+    print """</select>"""
+    print """</td>"""
+    print """</tr>"""
+
+    print """<tr>"""
+    print """<td colspan=3 align=left>&nbsp;</td>"""
+    print """</tr>"""
+    print """<tr>"""
+    print """<td colspan=3 align=left><input type=submit name=search value=search class=button></td>"""
+    print """</tr>"""
+
+    print """</table>"""
+    print """</form>"""
+
+
+def get_net_types(id=0):
+    """return dropdown box <option> with network types"""
+
+    if id == 0:
+        sql_net_types = """SELECT * FROM ipall_network_types ORDER BY typename"""
+    else:
+        sql_net_types = """SELECT * FROM ipall_network_types WHERE id=%u""" % id
+    net_types = conn.get_data(sql_net_types)
+        
+    return net_types
+
+
+def main():
+    """description"""
+
+    global conn, vrf
+    formdata = cgi.FieldStorage()
+    search_type = search_text = ""
+    vrf = ""
+    net_type = 0
+
+    if os.environ.has_key('QUERY_STRING') and os.environ['QUERY_STRING'] != "":
+        qs = os.environ['QUERY_STRING']
+        if len(qs.split("&")) == 1:
+            vrf = str(qs.split("&")[0])
+        else:
+            vrf = ""
+    else:
+        vrf = ""
+
+    try:
+        if formdata.has_key("vrf"):
+            vrf = str(formdata['vrf'].value)
+        if formdata.has_key("search_type"):
+            search_type = str(formdata['search_type'].value).lower()
+        if formdata.has_key("search_text"):
+            search_text = str(formdata['search_text'].value)
+        if formdata.has_key("net_type"):
+            net_type = str(formdata['net_type'].value)
+    except ValueError, e:
+        print "Error: %s" % e
+        print """<script language="javascript">alert("Value parse error, sorry!"); history.back();</script> """
+        return
+
+    ### create database connection object
+    cfg = ConfigObj("ipall.cfg")
+    db_host = cfg['Database']['db_host']
+    db_user = cfg['Database']['db_user']
+    db_pw = cfg['Database']['db_pw']
+    db = cfg['Database']['db']
+    conn = DBmy.db(db_host, db_user, db_pw, db)
+
+    ### user
+    s = Session(conn)
+    current_user = s.check_user()
+    #company = s.check_cookie()
+    HTML.simple_header()
+    if current_user == "":
+        HTML.simple_redirect_header(cfg['Server']['web_dir'])
+        return
+    else:
+        HTML.popup_body()
+    user = IpallUser.User(current_user)
+    group, company_id  = user.get_group_id()
+    rights = user.get_rights()
+
+    cgi_dir = cfg['Server']['cgi_dir']
+    ipall_dir = cfg['Server']['ipall_dir']
+    if group == 0:
+        HTML.restriction_message(1)
+        HTML.popup_footer()
+        return
+
+    if vrf == "":
+        HTML.notify_message("No View/VRF seleced for search!")
+        HTML.popup_footer()
+        return
+
+    if formdata.has_key("search"):
+        #print search_type, "<br>"
+        #print search_text, "<br>"
+        if re.search("^as[0-9]", search_text, re.I):
+            search_text = search_text.lower().replace("as", "")
+
+        if search_type == "network":
+            sql_search = """SELECT id, label, path, vrf, net_name FROM ipall_ip WHERE 
+                (label LIKE '%s%s' OR net_name LIKE '%s%s%s') AND vrf='%s'
+                ORDER BY address, label""" \
+                    % ( search_text, "%", "%", search_text, "%", vrf )
+        elif search_type == "peering":
+            sql_search = """SELECT i.id, i.label, i.path, i.vrf, i.net_name FROM ipall_ip i, ipall_peering_info p WHERE 
+                (i.peering_info_id=p.id AND p.as_nr LIKE '%s' OR p.as_set LIKE '%s' OR p.contact LIKE '%s' OR p.device LIKE '%s') 
+                AND i.vrf='%s' ORDER BY i.address, i.label""" % (search_text, search_text, search_text, search_text, vrf)
+        elif search_type == "service":
+            sql_search = """SELECT id, label, path, vrf, net_name FROM ipall_ip WHERE 
+                (service_id=%u and allocated=1) AND vrf='%s'
+                ORDER BY address, label""" % (int(net_type), vrf)
+        else:   
+            print """Error<br>"""
+            print """<a href="javascript:history.back();" class=LinkPurpleBold> << back </a>"""
+            return
+
+        #print sql_search, "<br>"
+        result = conn.get_data(sql_search)
+        #print result[0]
+
+        print """<br>"""
+        print """<table border=0 class=table_main>"""
+        print """<tr class=lightPurple3>"""
+        print """<td colspan=3 align=center class=TextPurpleBoldBig>&nbsp;</td>"""
+        print """</tr>"""
+        print """<tr class=lightPurple3>"""
+        print """<td height=20 class=TextPurpleBold colspan=3 align=center> IP@LL network search </td>"""
+        print """</tr>"""
+        print """<tr><td colspan=3>&nbsp;</td></tr>"""
+
+        for r in result:
+            print """<tr>"""
+            print """<td width=300><a href="%s/network_view.cgi?%s">%s (%s)</a></td>""" % (cgi_dir, r[0], r[1], r[4])
+            print """<td>"""
+            print """<img src="%s/images/editOff.png" id="edit"  onMouseOver="mouseoverImage(this, '%s');"  
+                    onMouseOut="mouseoverImage(this, '%s');" onClick="redirect_to_url('%s/network_edit.cgi?%s');" 
+                    class=handlers title="edit details"></a>""" % ( ipall_dir, ipall_dir, ipall_dir, cgi_dir, str(r[0]) )
+            print """</td>"""
+            print """<td><a href="%s/networks1.cgi?%s&%s#%s">network overview >> </a></td>""" % (cgi_dir, r[3], r[2], str(r[0]))
+            print """</tr>"""
+
+        print """</td></tr>"""
+        print """<tr><td colspan=3>&nbsp;</td></tr>"""
+        print """</table>"""        
+
+    else:
+        print """<br>"""
+        print """<table border=0 class=table_main>"""
+        print """<tr class=lightPurple3>"""
+        print """<td colspan=2 align=center class=TextPurpleBoldBig>&nbsp;</td>"""
+        print """</tr>"""
+        print """<tr class=lightPurple3>"""
+        print """<td height=20 class=TextPurpleBold colspan=2 align=center> IP@LL network search </td>"""
+        print """</tr>"""
+        print """<tr><td colspan=2>&nbsp;</td></tr>"""
+        print """<tr><td colspan=2>"""
+
+        print_search_form()
+
+        print """</td></tr>"""
+        print """<tr><td colspan=2>&nbsp;</td></tr>"""
+        print """</table>"""        
+        
+    HTML.popup_footer()
+
+main()

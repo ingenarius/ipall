@@ -1,0 +1,92 @@
+<table class="table_main" border="0">
+
+  <tbody>
+
+    <tr align="right">
+
+      <td style="text-align: left;" colspan="2" rowspan="1">
+      <table style="text-align: left; width: 100%;" border="0" cellpadding="0" cellspacing="0">
+
+        <tbody>
+
+          <tr class="lightPurple3">
+
+            <td style="text-align: left; width: 33%;"><span class="TextBlack">&lt;&lt; zur&uuml;ck</span></td>
+
+            <td style="text-align: center;"><a href="cgi_dir/documentation.cgi?de_index">index</a></td>
+
+            <td style="text-align: right; width: 33%;"><a href="cgi_dir/documentation.cgi?de_1">weiter &gt;&gt;</a></td>
+
+          </tr>
+
+        </tbody>
+      </table>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td colspan="2" rowspan="1"> <br>
+
+      <div style="text-align: center;"><span style="font-weight: bold;">Anleitung</span> <br>
+
+	<a class="LinkPurple" href="cgi_dir/documentation.cgi?de_index">Deutsch</a>
+/ <a class="LinkPurple" href="cgi_dir/documentation.cgi?en_index">Englisch</a><br>
+
+      <br>
+
+      <div style="text-align: left; margin-left: 40px; margin-right: 40px;" id="toccontainer">
+      <span class="TextPurpleBoldBig">Inhaltsverzeichnis</span>
+      <br>
+
+      <br>
+
+      <ul id="toclist">
+        <li><a href="cgi_dir/documentation.cgi?de_intro">Einleitung</a></li>
+        <li><a href="cgi_dir/documentation.cgi?de_1">Views/VRFs</a></li>
+        <ul id="tocsublist">
+            <li><a href="cgi_dir/documentation.cgi?de_1#register_as">register AS</a></li>
+        </ul>
+        <li><a href="cgi_dir/documentation.cgi?de_2">Netzwerke / Prefixe</a></li>
+        <ul id="tocsublist">
+          <li><a href="cgi_dir/documentation.cgi?de_2#new_network">new network</a></li>
+          <li><a href="cgi_dir/documentation.cgi?de_2#type_permission">type permission</a></li>
+          <li><a href="cgi_dir/documentation.cgi?de_2#search">search</a></li>
+          <li><a href="cgi_dir/documentation.cgi?de_2#view"><img style="border: 0px solid ;" alt="" src="../images/viewOn.png"></a> &nbsp; 
+            <a href="cgi_dir/documentation.cgi?de_2#view">view</a></li>
+          <li><a href="cgi_dir/documentation.cgi?de_2#print"><img style="border: 0px solid ;" alt="" src="../images/printOn.png"></a> &nbsp; 
+            <a href="cgi_dir/documentation.cgi?de_2#print">print</a></li>
+          <li><a href="cgi_dir/documentation.cgi?de_2#edit"><img style="border: 0px solid ;" alt="" src="../images/editOn.png"></a> &nbsp; 
+            <a href="cgi_dir/documentation.cgi?de_2#edit">edit</a></li>
+          <li><a href="cgi_dir/documentation.cgi?de_2#subnet"><img style="border: 0px solid ;" alt="" src="../images/subnetOn.png"></a> &nbsp; 
+            <a href="cgi_dir/documentation.cgi?de_2#subnet">subnet</a></li>
+          <li><a href="cgi_dir/documentation.cgi?de_2#import"><img style="border: 0px solid ;" alt="" src="../images/importOn.png"></a> &nbsp; 
+            <a href="cgi_dir/documentation.cgi?de_2#import">import</a></li>
+          <li><a href="cgi_dir/documentation.cgi?de_2#delete"><img style="border: 0px solid ;" alt="" src="../images/deleteOn.png"></a> &nbsp; 
+            <a href="cgi_dir/documentation.cgi?de_2#delete">delete</a></li>
+          <li><a href="cgi_dir/documentation.cgi?de_2#permissions"><img style="border: 0px solid ;" alt="" src="../images/permissionOn.png"></a>
+            &nbsp;<span class="LinkPurple"> </span><a class="LinkPurple" href="cgi_dir/documentation.cgi?de_2#permissions">permissions</a></li>
+        </ul>
+        <li><a href="cgi_dir/documentation.cgi?de_3">Management</a></li>
+        <ul id="tocsublist">
+            <li><a href="cgi_dir/documentation.cgi?de_3#companies">Companies</a></li>
+            <li><a href="cgi_dir/documentation.cgi?de_3#users">Users</a></li>
+            <li><a href="cgi_dir/documentation.cgi?de_3#groups">Groups</a></li>
+            <li><a href="cgi_dir/documentation.cgi?de_3#vrf_group_rights"></a>View/VRF group rights</li>
+            <li><a href="cgi_dir/documentation.cgi?de_3#network_types">Network types</a></li>
+            <li><a href="cgi_dir/documentation.cgi?de_3#logging">Logging</a></li>
+        </ul>
+      </ul>
+
+      </div>
+
+      </div>
+
+      </td>
+
+    </tr>
+
+  </tbody>
+</table>

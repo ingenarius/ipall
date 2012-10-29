@@ -1,0 +1,36 @@
+#!/usr/bin/python2.4
+
+import Html as HTML
+import DBmy
+import IpallUser
+import Session
+import os
+import cgi
+import cgitb; cgitb.enable()
+from Configobj import ConfigObj
+from Cookie import SimpleCookie
+from time import asctime
+
+
+def restriction_message():
+	"""print a restriction message"""
+
+	print """<blockquote>"""
+	print """<p class=textPurpleBold>You are not allowed to execute this</p>"""
+	print """<a href="javascript:history.back();" class=linkPurpleBold> << back</a>"""
+	print """</blockquote>"""
+
+
+def main():
+    """entry point for executing IPALL"""
+    
+    ### definitions of variables
+	global conn, depth, path, view
+	formdata = cgi.FieldStorage()
+
+	HTML.main_header()
+
+
+	HTML.main_footer()
+
+main()

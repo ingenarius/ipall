@@ -1,0 +1,308 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import Html as HTML
+import DBmy
+import IpallUser
+import IPy
+import Whois
+from Sessionclass import Session
+import os
+import re
+from Configobj import ConfigObj
+from Cookie import SimpleCookie
+
+
+def print_configs(peering_info, network, netname, dev):
+    """shows the neighbor config for cisco and juniper routers"""
+
+    print """<table border=0 cellspacing=0 cellpadding=0 class=TextPurple>"""
+    ### cisco neighbor config
+    print """<tr> <th align=left>Cisco neighbor config</th> </tr>"""
+    print """<tr>"""
+    print """<td>neighbor %s remote-as %s</td>""" % (network, peering_info[0][1])
+    print """</tr>"""
+    print """<tr>"""
+    print """<td>neighbor %s description %s</td>""" % (network, netname)
+    print """</tr>"""
+    if peering_info[0][3] != "NULL" and peering_info[0][3] != "None":
+        print """<tr>"""
+        print """<td>neighbor %s password %s</td>""" % (network, peering_info[0][3])
+        print """</tr>"""
+    print """<tr>"""
+    print """<td>neighbor %s peer-group YOUR-PEER-GROUP</td>""" % (network)
+    print """</tr>"""
+    if peering_info[0][9] != "NULL" and peering_info[0][9] != None and peering_info[0][9] != 0:
+        print """<tr>"""
+        print """<td>neighbor %s maximum-prefix %s restart 30</td>""" % (network, peering_info[0][9])
+        print """</tr>"""
+
+    print """<tr><td>&nbsp;</td></tr>"""
+
+    ### juniper neighbor config
+    print """<tr> <th align=left>Juniper neighbor config (edit within bgp group)</th> </tr>"""
+    print """<tr><td>set neighbor %s peer-as %s </td></tr>""" % (network, peering_info[0][1])
+    if peering_info[0][3] != "NULL" and peering_info[0][3] != "None":
+        print """<tr><td>set neighbor %s authentication-key "%s" </td></tr>""" % (network, peering_info[0][3])
+    print """<tr><td>set neighbor %s description "%s" </td></tr>""" % (network, netname)
+    if peering_info[0][9] != "NULL" and peering_info[0][9] != None and peering_info[0][9] != 0:
+        print """<tr><td>set neighbor %s family inet unicast prefix-limit maximum %s</td></tr>""" % (network, peering_info[0][9])
+        print """<tr><td>set neighbor %s family inet unicast prefix-limit teardown 90</td></tr>""" % (network)
+        print """<tr><td>set neighbor %s family inet unicast prefix-limit teardown idle-timeout 30</td></tr>""" % (network) 
+    print """<tr><td>insert neighbor %s after neighbor [PREVIOUS NEIGHBOR IP] </td></tr>""" % (network)
+
+    print """</table>"""
+    
+
+
+def print_peering_info(peering_info, network, device):
+    """If the selected network is a peering parner - print infos"""
+    
+    peering_graph_link = """http://81.5.223.17/functions/graphics/mac_acc.php?type=b&dev_id=25&ip=%s&time_range=d"""
+    print """<tr><td colspan=2>&nbsp;</td></tr>"""
+    print """<tr><td colspan=2 class=TextPurpleBold>Peering Information</td></tr>"""
+    print """<tr>"""
+    print """<td>AS</td>"""
+    print """<td>%s</td>""" % peering_info[0][1]
+    print """</tr><tr>"""
+    print """<td>AS-SET</td>"""
+    print """<td>%s</td>""" % peering_info[0][2]
+    print """</tr><tr>"""
+    print """<td>Max prefix</td>"""
+    print """<td>%s</td>""" % peering_info[0][9]
+    print """</tr><tr>"""
+    print """<td>MD5 Password</td>"""
+    print """<td>%s</td>""" % peering_info[0][3]
+    print """</tr><tr>"""
+    print """<td>Routeserver</td>"""
+    if peering_info[0][4] == 1:
+        print """<td>yes</td>"""
+    else:
+        print """<td>no</td>"""
+    print """</tr><tr>"""
+    print """<td>Session</td>"""
+    if peering_info[0][5] == 1:
+        print """<td>UP</td>"""
+    else:
+        print """<td>DOWN</td>"""
+    print """</tr><tr>"""
+    print """<td>Contact</td>"""
+    if peering_info[0][6] != None and peering_info[0][6] != "NULL":
+        print """<td><a href="mailto:%s" class=LinkPurpleBold>%s</a></td>""" % (peering_info[0][6], peering_info[0][6])
+    else:
+        print """<td>%s</td>""" % (peering_info[0][6])
+    print """</tr><tr>"""
+    print """<td>Peering device</td>"""
+    print """<td>%s</td>""" % peering_info[0][8].lower()
+    print """</tr><tr>"""
+    print """<td valign=top>Comment</td>"""
+    print """<td><textarea class=b_eingabefeld_white readonly>%s</textarea></td>""" % peering_info[0][7]
+    print """</tr><tr>"""
+    print """<td colspan=2>&nbsp;</td>"""
+##    print """</tr><tr>"""
+##    if len(device.split(";")) == 1:
+##	print """<td colspan=2><a href="http://81.5.223.17/functions/graphics/mac_acc.php?type=b&dev_name=%s&ip=%s&time_range=d" target=_blank>
+##	    <img src="http://81.5.223.17/functions/graphics/mac_acc.php?type=b&dev_name=%s&ip=%s&time_range=d" border=0></a></td>""" \
+##	    % (device, network.replace(".", "-"), device, network.replace(".", "-"))
+##    elif len(device.split(";")) > 1:
+##	for i in range(0, len(device.split(";"))):
+##	    print """<td colspan=2>%s<br>
+##		<a href="http://81.5.223.17/functions/graphics/mac_acc.php?type=b&dev_name=%s&ip=%s&time_range=d" target=_blank>
+##		<img src="http://81.5.223.17/functions/graphics/mac_acc.php?type=b&dev_name=%s&ip=%s&time_range=d" border=0></a></td>""" \
+##		% ( device.split(";")[i], device.split(";")[i], network.replace(".", "-"), device.split(";")[i].strip(), network.replace(".", "-"))
+##	    print """</tr><tr>"""
+##    else:
+##	print """<td colspan=2>&nbsp;</td>"""
+    print """</tr>"""
+
+
+def main():
+    """entry point for executing IPALL - view network details"""
+
+    ### definitions of variables
+    global rights, conn, group, cgi_dir
+
+    if os.environ.has_key('QUERY_STRING') and os.environ['QUERY_STRING'] != "":
+        qs = os.environ['QUERY_STRING']
+        if len(qs.split("&")) == 1:
+            id = int(qs.split("&")[0])
+    else:
+        current_user = ""
+        id = 0
+
+    ### create database connection object
+    cfg = ConfigObj("ipall.cfg")
+    db_host = cfg['Database']['db_host']
+    db_user = cfg['Database']['db_user']
+    db_pw = cfg['Database']['db_pw']
+    db = cfg['Database']['db']
+    conn = DBmy.db(db_host, db_user, db_pw, db)
+
+    ### User
+    s = Session(conn)
+    current_user = s.check_user()
+    #company = s.check_cookie()
+    HTML.simple_header()
+    if current_user == "":
+        HTML.simple_redirect_header(cfg['Server']['web_dir'])
+        return
+    else:
+        HTML.popup_body()
+    user = IpallUser.User(current_user)
+    group, company_id  = user.get_group_id()
+    rights = user.get_rights()
+    cgi_dir = cfg['Server']['cgi_dir']
+    ipall_dir = cfg['Server']['ipall_dir']
+    if group == 0:
+        HTML.restriction_message(1)
+        HTML.popup_footer()
+        return
+
+    referer = "javascript:this.close();"
+
+    query = """SELECT i.label, i.net_name, i.description, i.peering_info_id, i.path,
+        i.service_id, i.interface_name, i.vrf, i.companies_id, c.is_lir
+        FROM ipall_ip i, companies c
+        WHERE i.id=%u AND i.companies_id=c.id """ % (id)
+    details = conn.get_data(query)
+
+    if details == () or details == None:
+        HTML.error_message("Nothing to display!")
+        return
+    else:
+        if group != 1 and rights[2] != 1:
+            net_perm = conn.get_net_permissions(str(details[0][4]), group)
+            if net_perm == () or net_perm == "":
+                net_perm = 0
+                edit_perm = 0
+            else:
+                edit_perm = net_perm[1]
+                net_perm = net_perm[3]
+        else:
+            net_perm = 1
+            edit_perm = 1
+
+        if net_perm != 1:
+            HTML.restriction_message(1)
+            HTML.popup_footer()
+            return
+
+        peering_info_id = details[0][3]
+        if peering_info_id != 0 and peering_info_id != None:
+            sql_peering = """SELECT id, as_nr, as_set, md5, rs, session_up, contact, comment, device, max_prefix FROM ipall_peering_info where id=%u""" % peering_info_id
+            peering_info = conn.get_data(sql_peering)
+        else:
+            peering_info = ()
+            
+        service_id = details[0][5]
+        if service_id != 0 and service_id != None:
+            sql_net_type = """SELECT id, typename, description FROM ipall_network_types where id=%u""" % service_id
+            net_type = conn.get_data(sql_net_type)
+        else:
+            net_type = ()
+
+        print """<br><center>"""
+        print """<div id="main" class=TextPurple>"""
+        print """<table class=table_main border=0><tr class=lightPurple3 height=20><td colspan=2>"""
+        ### header table ###
+        print """<table class=table_main border=0>"""
+        print """<tr>"""
+        print """<td width=210 class=TextPurpleBold>Network"""
+        print """</td>"""
+        print """<td class=TextPurpleBold valign="middle">%s""" % details[0][0]
+        if group == 1 or rights[2] == 1:
+            if peering_info != () and peering_info != None:
+                print """&nbsp;&nbsp; | &nbsp;&nbsp;<a href="javascript:void(0);" id="toggle_config" 
+                onClick="toggle_msg(this, 'config on', 'config off');" title="show router configs">config on</a>"""
+            if details[0][9] == 1:
+                print """&nbsp;&nbsp; | &nbsp;&nbsp;<a href="javascript:void(0);" title="show ripe mail form" class=LinkPurpleBold id="toggle_ripe" onClick="toggle_msg(this, 'show ripe', 'hide ripe');">show ripe</a>"""
+            else:
+                print """&nbsp;&nbsp;"""
+            print """</td>"""
+            if edit_perm == 1:
+                print """<td><img src="%s/images/editOff.png" id="edit" onMouseOver="mouseoverImage(this, '%s');"  
+                    onMouseOut="mouseoverImage(this, '%s');" onClick="popup('%s/network_edit.cgi?%s');" class=handlers /></td>""" \
+                        % ( ipall_dir, ipall_dir, ipall_dir, cgi_dir, id )
+        print """</tr>"""
+        print """</table>""" ### header table
+
+        print """</td>""" 
+        print """</tr><tr>"""
+        print """<td width=210>Name</td>"""
+        print """<td>%s</td>""" % details[0][1]
+        print """</tr>"""
+
+        if net_type != () and net_type != None:
+            print """<tr>"""
+            print """<td>Network Type</td>"""
+            print """<td>%s</td>""" % net_type[0][1]
+            print """</tr>"""
+
+            print """<tr>"""
+            print """<td>Interface</td>"""
+            print """<td>%s</td>""" % details[0][6]
+            print """</tr>"""
+
+        print """<tr>"""
+        print """<td valign=top>Description</td>"""
+        print """<td><textarea class=b_eingabefeld_white readonly>%s</textarea></td>""" % details[0][2]
+        print """</tr>"""
+        
+        if peering_info != () and peering_info != None:
+            if peering_info[0][8].find("_"):
+                dev = re.sub("_", "-", peering_info[0][8].lower())
+            else:
+                dev = peering_info[0][8].lower()
+            print_peering_info(peering_info, details[0][0], dev)
+            print """<tr><td colspan=2>&nbsp;</td></tr>"""
+            print """<tr><td colspan=2><div id="config">"""
+            print_configs(peering_info, details[0][0], details[0][1], dev)
+            print """</div></td></tr>"""
+            print """<script language="javascript">
+            var slide2 = new Fx.Slide('config');
+            $('toggle_config').addEvent('click', function(e){
+                e = new Event(e);
+                slide2.toggle();
+                e.stop();
+            });
+            slide2.hide();
+            </script>"""
+
+        print """<tr><td colspan=2>&nbsp;</td></tr>"""
+        print """<td colspan=2 align=right>"""
+        print """<div id="foot"></div>"""
+        print """</td></tr>""" 
+
+        print """<tr><td colspan=2>&nbsp;</td></tr>"""
+        print """<tr>"""
+        print """<td colspan=2><div id="ripe"><hr>"""
+        net = IPy.IP(details[0][0])
+        register = Whois.whois()
+        register.print_form(details[0][8], net.net(), net.broadcast(), net.prefixlen(), details[0][1], referer)
+        print """</div></td>"""
+        print """</tr>"""
+
+        print """</table></div>"""
+        print """</center>"""
+        print """<script language="javascript">
+        var slide1 = new Fx.Slide('ripe');
+        $('toggle_ripe').addEvent('click', function(e){
+            e = new Event(e);
+            slide1.toggle();
+            e.stop();
+        });
+        slide1.hide();
+        </script>"""
+
+
+    HTML.popup_footer()
+
+
+main()

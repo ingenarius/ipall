@@ -1,0 +1,261 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import Html as HTML
+import DBmy
+import IpallUser
+from Sessionclass import Session
+import IPy
+import os
+import cgi
+import cgitb; cgitb.enable()
+from Configobj import ConfigObj
+from Cookie import SimpleCookie
+
+
+def print_newnet_form(company):
+    """print a HTML form for inserting a new network"""
+
+    print """<form name="new_network" method=POST action="new_network.cgi" onSubmit="return check_new_net()">"""
+
+    print """<input type=hidden name=vrf value="%s">""" % str(vrf)
+    print """<input type=hidden name=company value="%s">""" % company
+##    print """<input type=hidden name=uri value="%s">""" % referer
+    #print """</tr><tr>"""
+
+    print """<td>Network (in CIDR format, e.g. 10.0.0.0/8) *</td>"""
+    print """<td rowspan=14><div id="info" style="display: block;"></div></td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="network" name=network size=33 class=b_eingabefeld></td>"""
+    print """</tr><tr>"""
+
+    print """<td>Network name *</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="netname" name=netname size=33 class=b_eingabefeld maxlength=30></td>"""
+    print """</tr><tr>"""
+
+#    print """<td>Network type</td>"""
+    print """<td>Network type (<b><a href="javascript:void(0);" id="help" 
+        name="help">descriptions</a></b>)</td>"""
+    print """</tr><tr>"""
+    print """<td valign=top>"""
+    print """<select id="net_type" name=net_type class=b_eingabefeld><option value="1">Default</option>"""
+    print_net_types()
+    print """</select>"""
+    print """</td>"""
+    print """</tr><tr>"""
+
+    print """<td>Network is allocated / aggregated</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=checkbox id="allocated" name=allocated> / <input type=checkbox id="aggregated" name=aggregated></td>"""
+    print """</tr><tr>"""
+
+    print """<td>Description</td>"""
+    print """</tr><tr>"""
+    print """<td><textarea id="description" name=description cols=40 rows=6 class=b_eingabefeld></textarea>"""
+    print """</tr><tr>"""
+
+    print """<td>&nbsp;</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=submit id="save" name=save value=save class=button></td>"""
+    print """</tr>"""
+
+
+def print_net_types():
+    """return dropdown box <option> with network types"""
+
+    sql_net_types = """SELECT * FROM ipall_network_types WHERE id != 1 ORDER BY typename"""
+    net_types = conn.get_data(sql_net_types)
+
+    if net_types != ():
+        for t in net_types:
+            print """<option value=%u>%s</option>""" % (int(t[0]), t[1])
+    else:
+        return
+
+
+def main():
+        """create a new superblock"""
+
+        global vrf, conn, cgi_dir, ipall_dir
+        formdata = cgi.FieldStorage()
+        network = netname = description = net_type = "NULL"
+        device_id = 1
+        company = 0
+        allocated = aggregated = "off"
+
+        if os.environ.has_key('QUERY_STRING') and os.environ['QUERY_STRING'] != "":
+                qs = os.environ['QUERY_STRING']
+                vrf = str(qs[0:])
+        else:
+                vrf = "None"
+                path = "0"
+
+        ### create database connection object
+        cfg = ConfigObj("ipall.cfg")
+        db_host = cfg['Database']['db_host']
+        db_user = cfg['Database']['db_user']
+        db_pw = cfg['Database']['db_pw']
+        db = cfg['Database']['db']
+        conn = DBmy.db(db_host, db_user, db_pw, db)
+
+        ### User
+        s = Session(conn)
+        current_user = s.check_user()
+        #company = s.check_cookie()
+        HTML.simple_header()
+        if current_user == "":
+            HTML.simple_redirect_header(cfg['Server']['web_dir'])
+            return
+        else:
+            HTML.popup_body()
+        user = IpallUser.User(current_user)
+        group, company_id  = user.get_group_id()
+        cgi_dir = cfg['Server']['cgi_dir']
+        ipall_dir = cfg['Server']['ipall_dir']
+        if group == 0:
+            HTML.restriction_message(1)
+            return
+
+        if vrf == "None" and not formdata.has_key("save"):
+            HTML.error_message("No vrf selected!")
+            return
+        ### logged in user does have enough rights to 
+        else:
+            try:
+                if formdata.has_key("uri"):
+                        uri = str(formdata['uri'].value)
+                if formdata.has_key("company"):
+                        company = int(formdata['company'].value)
+                if formdata.has_key("vrf"):
+                        vrf = str(formdata['vrf'].value)
+                if formdata.has_key("network"):
+                        network = str(formdata['network'].value)
+                if formdata.has_key("netname"):
+                        netname = str(formdata['netname'].value)
+                if formdata.has_key("description"):
+                        description = str(formdata['description'].value)
+                if formdata.has_key("net_type"):
+                        net_type = str(formdata['net_type'].value)
+                if formdata.has_key("allocated"):
+                        allocated = str(formdata['allocated'].value)
+                if formdata.has_key("aggregated"):
+                        aggregated = str(formdata['aggregated'].value)
+            except:
+                print """<script language="javascript">alert("value parse error!"); history.back();</script> """
+
+        rights = user.get_rights(vrf)
+        if group != 1 and rights[0] != 1 and rights[2] != 1: 
+            HTML.restriction_message(1)
+            HTML.popup_footer()
+            return
+
+        ### SAVE button has been pressed
+        if formdata.has_key("save"):
+            try:
+                net = IPy.IP(network)
+            except:
+                print """<script language="javascript">alert("You should insert a valid network address"); history.back();</script> """ 
+                return
+
+            print "<br>"
+
+            ### a description has been typed
+            if description == "NULL" or description == "None": description = "NULL"
+            else: description = "'" + description + "'"
+            if allocated == "on" and group == 1: allocated = 1;
+            else: allocated = 0;
+            if aggregated == "on" and group == 1: aggregated = 1;
+            else: aggregated = 0;
+
+            if net_type == 0:
+                HTML.notify_message("Information: You did not select a network type!")
+                net_type = "NULL"
+
+
+            sql_insert = """INSERT INTO `ipall_ip` ( `id` , `parent_id` , `label` , `address` , `net_name` , `description` , `path` , `subnetted` , `peering_info_id` , `vrf` , `aggregated` , `product_id` , `interface_id` , `service_id`, `allocated`, `companies_id`) 
+            VALUES ('', '0', '%s', %u, '%s', %s , '0', '0', NULL, '%s', %s, NULL , NULL , %s, %s, %u)""" \
+                % (net.strNormal(), int(net.strDec()), netname, description, str(vrf), aggregated, net_type, allocated, company)
+            last_id = conn.insert_data(sql_insert)
+
+            ### LOGGING
+            id_link = """<a href='javascript:void(0);' onClick=popup(\'%s/network_view.cgi?%s\') class=LinkPurpleBold>id: %s</a> - """ \
+            % ( cgi_dir, str(last_id), str(last_id) )
+            log_string = id_link + sql_insert
+            sql_log = """INSERT INTO nms_log VALUES ('', '%s', SYSDATE(), 'ipall_ip', "%s", %u)""" % (current_user, log_string, company)
+            log = conn.insert_data(sql_log)
+
+            if last_id != 0:
+                path = "0:" + str(last_id)
+
+                ### set the path field correctly
+                sql_update = """UPDATE ipall_ip SET path='%s' WHERE id=%u """ % (str(path), int(last_id))
+                update = conn.update_data(sql_update)
+
+                if group != 1:
+                    sql_ins_rights = """INSERT INTO ipall_rights VALUES(%u, '%s', 1, 1, 1, 1, 0, 0, %u)""" % ( group, str(path), int(company_id) )
+                    update = conn.update_data(sql_ins_rights)
+
+                if update != 0:
+                    uri = "javascript:this.close();" 
+                    print """<script language="javascript">window.opener.location.reload();window.opener.focus();</script>"""
+                    HTML.redirect(uri)
+                else:
+                    msg = """An error during "update path" has occured!"""
+                    HTML.notify_message(msg)
+##                    print """<table class=table_main>"""
+##                    print """<tr><td class=TextPurpleBold>An error during "update path" has occured!</td></tr>"""
+##                    print """<tr><td><a href="javascript:this.close();" class=linkPurpleBold> << close </a></td></tr>""" % (cgi_dir, str(vrf))
+##                    print """</table>"""
+            else:   ### check_ins = 0
+                msg = """An error during "insert prefix" has occured!"""
+                HTML.notify_message(msg)
+##                    print """<table class=table_main>"""
+##                    print """<tr><td class=TextPurpleBold>An error during "insert prefix" has occured!</td></tr>"""
+##                    print """<tr><td><a href="%s" class=linkPurpleBold> << back </a></td></tr>""" % uri
+##                    print """</table>"""
+
+        ### SAVE button has not been pressed
+        else:   
+            sql_net = """SELECT companies_id FROM networks WHERE vpn_rd='%s' """ % vrf
+            company = conn.get_data(sql_net)
+            if company != ():
+                company = company[0][0]
+            else:
+                company = company_id
+
+            print """<br>"""
+            print """<div id="main" class=TextPurple>"""
+            print """<table class=table_main border=0 cellspacing=5><tr class=lightPurple3 height=20>"""
+            print """<td class=TextPurpleBoldBig colspan=2>Insert a new network superblock</td>""" 
+            print """</tr><tr height=20>"""
+
+            print_newnet_form(company)
+
+            print """<tr><td>&nbsp;</td>"""
+            print """</tr><tr>"""
+            print """<td>* required field</td>"""
+            print """</tr>"""
+            print """</div>"""
+            print """</table>"""
+            print """<script language="javascript">
+                window.onLoad = ajaxFunction('%s/help_nettypes.cgi','info','1');
+                var slide = new Fx.Slide('info');
+                $('help').addEvent('click', function(e){
+                    e = new Event(e);
+                    slide.toggle();
+                    e.stop();
+                });
+                slide.toggle();
+                </script>""" % ( cgi_dir )
+
+        HTML.popup_footer()
+
+main()

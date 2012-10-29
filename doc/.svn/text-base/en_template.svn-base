@@ -1,0 +1,48 @@
+<table class="table_main" border="0">
+  <tbody>
+    <!--header table - BEGINN-->
+    <tr align="right">
+      <td style="text-align: left;" colspan="2" rowspan="1"> 
+      <table style="text-align: left; width: 100%;" border="0" cellpadding="0" cellspacing="0">
+        <tbody>
+          <tr class="lightPurple3">
+            <td style="text-align: left; width: 33%;">
+                <a href="cgi_dir/documentation.cgi?en_2">&lt;&lt; back</a>
+            </td>
+            <td style="text-align: center;">
+                <a href="cgi_dir/documentation.cgi?en_index">index</a></td>
+            <td style="text-align: right; width: 33%;">
+                <a href="cgi_dir/documentation.cgi?en_4">next &gt;&gt;</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+    </tr>
+    <!--header table - ENDE-->
+    <tr>
+      <td colspan="2" rowspan="1"> <br>
+      <!--Sprachenwahl-->
+      <div style="text-align: center;">
+        <span style="font-weight: bold;">Documentation</span><br>
+            <a class="LinkPurple" href="cgi_dir/documentation.cgi?de_3">German</a> / 
+            <a class="LinkPurple" href="cgi_dir/documentation.cgi?en_3">English</a><br>
+        <br>
+      <!--Ueberschrift-->
+      <div style="text-align: left; margin-left: 40px;">
+        <span class="TextPurpleBoldBig"><!-- TEXT HERE --></span><br>
+      </div>
+
+      <!--Blocksatz fuer text - BEGINN-->
+      <div style="text-align: justify;">
+        <span class="TextPurple"><br>
+
+            <!-- TEXT HERE -->
+            
+        </span>
+      </div> <!--Blocksatz fuer text - ENDE-->
+      <!--text ende-->
+      </td>
+    </tr>
+  </tbody>
+</table>

@@ -1,0 +1,76 @@
+<table class="table_main" border="0">
+
+  <tbody>
+
+    <tr align="right">
+
+      <td style="text-align: left;" colspan="2" rowspan="1">
+      <table style="text-align: left; width: 100%;" border="0" cellpadding="0" cellspacing="0">
+
+        <tbody>
+
+          <tr class="lightPurple3">
+
+            <td style="text-align: left; width: 33%;"><a href="cgi_dir/documentation.cgi?en_index"><span class="TextBlack">&lt;&lt;
+back</span></a></td>
+
+            <td style="text-align: center;"><a href="cgi_dir/documentation.cgi?en_index">index</a></td>
+
+            <td style="text-align: right; width: 33%;"><a href="cgi_dir/documentation.cgi?en_2">next &gt;&gt;</a></td>
+
+          </tr>
+
+        </tbody>
+      </table>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td colspan="2" rowspan="1"> <br>
+
+      <div style="text-align: center;"><span style="font-weight: bold;">Documentation</span><br>
+
+      <a class="LinkPurple" href="cgi_dir/documentation.cgi?de_1">German</a>
+/ <a class="LinkPurple" href="cgi_dir/documentation.cgi?en_1">English</a><br>
+
+      <span class="TextPurpleBoldBig"></span><span class="TextPurpleBoldBig"><br>
+
+      </span>
+      <div style="text-align: left; margin-left: 40px;"><span class="TextPurpleBoldBig">Introduction</span><br>
+
+      </div>
+
+      <div style="text-align: left; margin-left: 40px;"><span class="TextPurple"></span>
+      <div style="text-align: justify;"><span class="TextPurple"><br>
+
+When you launch IP@LL you will see a list of all VRFs/views which are 
+already in the database. Such a view is just a container where you can
+document IP addresses which have to be unique over all MPLS VPNs or it 
+can be your internet routing table.
+</span><br class="TextPurple">
+
+      </div>
+
+      <div style="text-align: justify;"><br>
+
+      </div>
+
+      <br>
+
+      <ul>
+
+      </ul>
+
+      </div>
+
+      </div>
+
+      </td>
+
+    </tr>
+
+  </tbody>
+</table>

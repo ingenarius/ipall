@@ -1,0 +1,89 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import os
+import IP
+import IPy
+import DBmy
+import IpallUser
+import Html as HTML
+from Sessionclass import Session
+from Configobj import ConfigObj
+
+
+def main():
+    """return subnets"""
+    
+    if os.environ.has_key('QUERY_STRING') and os.environ['QUERY_STRING'] != "":
+        qs = os.environ['QUERY_STRING']
+        if len(qs.split("&")) == 2:
+            id = int(qs.split("&")[0])
+            mask = int(qs.split("&")[1])
+        else:
+            id = mask = 0
+    else:
+        id = mask = 0
+
+    ### create database connection object
+    cfg = ConfigObj("ipall.cfg")
+    db_host = cfg['Database']['db_host']
+    db_user = cfg['Database']['db_user']
+    db_pw = cfg['Database']['db_pw']
+    db = cfg['Database']['db']
+    conn = DBmy.db(db_host, db_user, db_pw, db)
+
+    ### user
+    s = Session(conn)
+    current_user = s.check_user()
+    #company = s.check_cookie()
+    #HTML.simple_header()
+    if current_user == "":
+        HTML.simple_redirect_header(cfg['Server']['web_dir'])
+        return
+    user = IpallUser.User(current_user)
+    group, company_id  = user.get_group_id()
+    rights = user.get_rights()
+    cgi_dir = cfg['Server']['cgi_dir']
+    ipall_dir = cfg['Server']['ipall_dir']
+    if group == 0:
+        return
+
+    print "Content-type: text/html\n\n"
+
+    sql_parent_net = """SELECT label, path, vrf FROM ipall_ip WHERE id=%u """ % int(id)
+    parent_net = conn.get_data(sql_parent_net)
+    parent = IPy.IP(parent_net[0][0])
+
+    if group == 1 or rights[2] == 1:
+        net_perm = 1
+    else:
+        net_perm = conn.get_net_permissions(parent_net[0][1], group)
+        #print net_perm
+        if net_perm == () or net_perm == "":
+            net_perm = 0
+        else:
+            net_perm = net_perm[2]
+
+    if net_perm != 1:
+        return
+
+    if parent_net != ():
+        new_nets = IP.calc_networks(id, parent, mask, conn)
+        return_value = ""
+        if new_nets != ():
+            for n in new_nets:
+                if return_value == "":
+                    return_value = n
+                else:
+                    return_value = return_value + "," + n
+        print return_value
+
+
+main()

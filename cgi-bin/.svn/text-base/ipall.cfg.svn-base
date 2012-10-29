@@ -1,0 +1,21 @@
+[General]
+version = "1.0"
+company_name = "poiss.priv.at"
+company_url = "#"
+
+[Database]
+db_host = "localhost"
+db_user = "ipall"
+db_pw = "ip@ll"
+db = "ipall"
+
+[Server]
+cgi_dir = "/cgi-bin"
+web_dir = "/"
+ipall_dir = ""
+doc_dir = "/var/www/ipall/doc"
+doc_prefer = "de"
+url = "http://ipall.racyapz.at"
+whois_server = "whois.ripe.net"
+sendmail = "/usr/sbin/sendmail"
+ripe_mail = "andreas.poiss@racyapz.at"

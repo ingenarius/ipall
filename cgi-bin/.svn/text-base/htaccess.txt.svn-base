@@ -1,0 +1,4 @@
+RewriteEngine on
+
+RewriteBase /cgi-bin
+RewriteRule ^networks\.cgi\?(.*) /networks/$1

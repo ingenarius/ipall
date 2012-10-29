@@ -1,0 +1,378 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import Html as HTML
+import DBmy
+import IpallUser
+from Sessionclass import Session
+import os
+import re
+import cgi
+import cgitb; cgitb.enable()
+from Configobj import ConfigObj
+from Cookie import SimpleCookie
+
+
+
+def print_network_form(details):
+    """print html form to edit network details"""
+
+    print """<input type=hidden name=net_id value=%u>""" % int(details[0][0])
+    print """<input type=hidden name=company value=%u>""" % int(details[0][11])
+    print """<table width=100% border=0 class=TextPurple>"""
+    ### network name
+    print """<tr>"""
+    print """<td width=200px>Network Name *</td>"""
+    print """<td><input type=text id="net_name" name=net_name 
+        class=b_eingabefeld value="%s" maxlength=35></td>""" % details[0][2]
+    print """</tr>"""
+    ### network description
+    print """<tr>"""
+    print """<td valign=top>Network description</td>"""
+    print """<td><textarea id="net_description" name=net_description 
+        class=b_eingabefeld>%s</textarea></td>""" % details[0][3]
+    print """</tr>"""
+    ### network type
+    print """<tr>"""
+    print """<td valign=top>Network type</td>"""
+    print """<td valign=top>"""
+    print """<select id="net_type" name=net_type class=b_eingabefeld>""" 
+    if details[0][7] != 0 and details[0][7] != None:
+        is_type = get_net_types(details[0][7])
+        print """<option value=%u>%s</option>""" % (is_type[0][0], is_type[0][1])
+    if group == 1 or rights[2] == 1:
+        #print """<option value=0>Undefiniert</option>"""
+        all_types = get_net_types()
+        for t in all_types:
+            if t[0] != details[0][7]:
+                print """<option value=%u>%s</option>""" % (t[0], t[1])
+    print """</select>"""
+    print """<a href="javascript:void(0);" id="help" name="help">descriptions</a>""" 
+    print """</td>"""
+    print """</tr>"""
+    ### interface
+    print """<tr>"""
+    print """<td valign=top>Interface</td>"""
+    print """<td><input type=text id="interface" name=interface class=b_eingabefeld value="%s" maxlength=250></td>""" % details[0][9]
+    print """</tr>"""
+
+    if group == 1 or rights[2] == 1:
+        print """<tr>"""
+        print """<td>Allocated</td>"""
+        if details[0][8] == 1:
+            print """<td><input type=checkbox id="allocated" name=allocated checked></td>"""
+        else:
+            print """<td><input type=checkbox id="allocated" name=allocated></td>"""
+        print """</tr>"""
+        print """<tr>"""
+        print """<td>Aggregated</td>"""
+        if details[0][5] == 1:
+            print """<td><input type=checkbox id="aggregated" name=aggregated checked></td>"""
+        else: 
+            print """<td><input type=checkbox id="aggregated" name=aggregated></td>"""
+        print """</tr>"""
+    print """<tr><td colspan=2><div id="help_nettypes" style="border: solid 1px #CCCCCC;"></div></td></tr>"""
+    print """</table>"""
+    print """<script language="javascript">
+        window.onLoad = ajaxFunction('%s/help_nettypes.cgi','help_nettypes','1');
+        var slide = new Fx.Slide('help_nettypes');
+        $('help').addEvent('click', function(e){
+            e = new Event(e);
+            slide.toggle();
+            e.stop();
+        });
+        slide.hide();
+        </script>""" % ( cgi_dir )
+
+
+def get_net_types(id=0):
+    """return dropdown box <option> with network types"""
+
+    if id == 0:
+        sql_net_types = """SELECT id, typename FROM ipall_network_types ORDER BY typename"""
+    else:
+        sql_net_types = """SELECT id, typename FROM ipall_network_types WHERE id=%u""" % id
+    net_types = conn.get_data(sql_net_types)
+    return net_types
+
+
+def print_peering_form(peering_info):
+    """print html form for peering information"""
+
+    print """<input type=hidden name=peering_info_id value=%u>""" % int(peering_info[0][0])
+    print """<table width=100% border=0 class=TextPurple>"""
+    print """<tr>"""
+    print """<td width=200px>AS Number *</td>"""
+    print """<td><input type=text id="as_nr" name=as_nr class=b_eingabefeld_100 value=%u></td>""" % int(peering_info[0][1])
+    print """</tr><tr>"""
+    print """<td>AS set</td>"""
+    print """<td><input type=text id="as_set" name=as_set class=b_eingabefeld_100 value="%s"></td>""" % str(peering_info[0][2])
+    print """</tr><tr>"""
+    print """<td>Max prefix</td>"""
+    print """<td><input type=text id="max_prefix" name=max_prefix class=b_eingabefeld_100 value="%s"></td>""" % str(peering_info[0][9])
+    print """</tr><tr>"""
+    print """<td>MD5 password</td>"""
+    print """<td><input type=text id="md5" name=md5 class=b_eingabefeld_100 value="%s"></td>""" % str(peering_info[0][3])
+    print """</tr><tr>"""
+    print """<td>Contact email</td>"""
+    print """<td><input type=text id="contact_mail" name=contact_mail class=b_eingabefeld_100 value="%s"></td>""" % str(peering_info[0][6])
+    print """</tr><tr>"""
+    print """<td>Peering device *</td>"""
+    print """<td><input type=text id="peer_device" name=peer_device class=b_eingabefeld_100 value="%s"></td>""" % str(peering_info[0][8])
+    print """</tr><tr>"""
+    print """<td>Available at Routeserver</td>"""
+    if peering_info[0][4] == 1:
+        print """<td><input type=checkbox id="rs" name=rs checked></td>"""
+    else:
+        print """<td><input type=checkbox id="rs" name=rs></td>"""
+    print """</tr><tr>"""
+    print """<td>Session is up</td>"""
+    if peering_info[0][5] == 1:
+        print """<td><input type=checkbox id="session_up" name=session_up checked></td>"""
+    else:
+        print """<td><input type=checkbox id="session_up" name=session_up></td>"""
+    print """</tr><tr>"""
+    print """<td valign=top>Comment</td>"""
+    print """<td><textarea id="peer_comment" name=peer_comment class=b_eingabefeld>%s</textarea></td>""" % str(peering_info[0][7])
+    print """</tr></table>"""
+
+
+
+def main():
+    """entry point for executing IPALL - edit network details"""
+
+    ### definitions of variables
+    global rights, conn, group, cgi_dir
+    formdata = cgi.FieldStorage()
+    as_nr = company = 0
+    device_id = 1
+    net_name = net_description = net_type = peering_info_id = interface = as_set = md5 = max_prefix = contact_mail = peer_comment = peer_device = "NULL"
+    rs = session_up = allocated = aggregated = "off"
+
+    if os.environ.has_key('QUERY_STRING') and os.environ['QUERY_STRING'] != "":
+        qs = os.environ['QUERY_STRING']
+        if len(qs.split("&")) == 1:
+            id = int(qs.split("&")[0])
+    else:
+        id = 0
+
+    try:
+        ### network info
+        if formdata.has_key("uri"):
+            uri = str(formdata['uri'].value)
+        if formdata.has_key("net_id"):
+            id = int(formdata['net_id'].value)
+        if formdata.has_key("company"):
+            company = int(formdata['company'].value)
+        if formdata.has_key("net_name"):
+            net_name = str(formdata['net_name'].value)
+        if formdata.has_key("net_description"):
+            net_description = str(formdata['net_description'].value)
+        if formdata.has_key("interface"):
+            interface = str(formdata['interface'].value)
+        if formdata.has_key("net_type"):
+            net_type = int(formdata['net_type'].value)
+        if formdata.has_key("allocated"):
+            allocated = str(formdata['allocated'].value)
+        if formdata.has_key("aggregated"):
+            aggregated = str(formdata['aggregated'].value)
+        ### device info
+#        if formdata.has_key("device_id"):
+#            device_id = int(formdata['device_id'].value)
+        ### peering info
+        if formdata.has_key("peering_info_id"):
+            peering_info_id = int(formdata['peering_info_id'].value)
+        if formdata.has_key("as_nr"):
+            as_nr = str(formdata['as_nr'].value)
+        if formdata.has_key("as_set"):
+            as_set = str(formdata['as_set'].value)
+        if formdata.has_key("md5"):
+            md5 = str(formdata['md5'].value)
+        if formdata.has_key("max_prefix"):
+            max_prefix = str(formdata['max_prefix'].value)
+        if formdata.has_key("contact_mail"):
+            contact_mail = str(formdata['contact_mail'].value) 
+        if formdata.has_key("peer_device"):
+            peer_device = str(formdata['peer_device'].value) 
+        if formdata.has_key("rs"): 
+            rs = str(formdata['rs'].value)
+        if formdata.has_key("session_up"):
+            session_up = str(formdata['session_up'].value)
+        if formdata.has_key("peer_comment"):
+            peer_comment = str(formdata['peer_comment'].value)
+    except ValueError, e:
+        print "Error: %s" % e
+        print """<script language="javascript">alert("Value parse error, sorry!"); history.back();</script> """
+        return
+
+    ### create database connection object
+    cfg = ConfigObj("ipall.cfg")
+    db_host = cfg['Database']['db_host']
+    db_user = cfg['Database']['db_user']
+    db_pw = cfg['Database']['db_pw']
+    db = cfg['Database']['db']
+    conn = DBmy.db(db_host, db_user, db_pw, db)
+
+    ### User
+    s = Session(conn)
+    current_user = s.check_user()
+    #company = s.check_cookie()
+    HTML.simple_header()
+    if current_user == "":
+        HTML.simple_redirect_header(cfg['Server']['web_dir'])
+        return
+    else:
+        HTML.popup_body()
+    user = IpallUser.User(current_user)
+    group, company_id  = user.get_group_id()
+
+    cgi_dir = cfg['Server']['cgi_dir']
+    if group == 0:
+        HTML.restriction_message(1)
+        HTML.popup_footer()
+        return
+
+
+    if formdata.has_key("save"):
+        #print "id, net_name, net_description, device_id, peering_info_id, as_nr, as_set, md5, contact_mail, rs, session_up, peer_comment<br>"
+        #print id, net_name, net_description, device_id, peering_info_id, as_nr, as_set, md5, contact_mail, rs, session_up, peer_comment
+        if net_type == 0: net_type = "NULL";
+        if net_description == "NULL" or net_description == "None": net_description = "NULL";
+        else: net_description = "'" + net_description + "'"
+        if interface == "NULL" or interface == "None": interface = "NULL";
+        else: interface = "'" + interface.lower().replace(" ","") + "'"
+        if peering_info_id == "NULL" or peering_info_id == 0: peering_info_id = "NULL";
+        if allocated == "on": allocated = 1;
+        else: allocated = 0
+        if aggregated == "on": aggregated = 1;
+        else: aggregated = 0
+
+        if peering_info_id != "NULL":
+            as_nr = int(as_nr);
+            as_set = "'" + as_set + "'"
+            if md5 == "NULL" or md5 == "None": md5 = "NULL";
+            else: md5 = "'" + md5 + "'"
+            max_prefix = int(max_prefix);
+            if contact_mail == "NULL" or contact_mail == "None": contact_mail = "NULL";
+            else: contact_mail = "'" + contact_mail + "'"
+            #print peer_comment.find("\""), peer_comment.find("'")
+            if peer_comment == "NULL" or peer_comment == "None": peer_comment = "NULL";
+            else: peer_comment = "'" + peer_comment + "'"
+            if rs == "on": rs = 1;
+            else: rs = 0
+            if session_up == "on": session_up = 1;
+            else: session_up = 0
+            peer_device = "'" + peer_device + "'"
+
+            sql_peer_upd = """UPDATE ipall_peering_info SET as_nr=%u, as_set=%s, md5=%s, rs='%s', session_up='%s', contact=%s, comment=%s, device=%s, max_prefix=%s WHERE id=%u """ \
+                % (as_nr, as_set, md5, rs, session_up, contact_mail, peer_comment, peer_device, max_prefix, peering_info_id)
+            #print "<br>", sql_peer_upd
+            upd_peer =  conn.update_data(sql_peer_upd)
+
+            if upd_peer != 0:
+                sql_log = """INSERT INTO nms_log VALUES ('', '%s', SYSDATE(), 'ipall_peering_info', "%s", %u)""" % (current_user, sql_peer_upd, company)
+                log_peer = conn.insert_data(sql_log)
+                print """<br><table>"""
+                print """<tr><td class=TextPurpleBold>Peering information has been updated successfully!</td></tr>"""
+                print """</table>"""
+            else:
+                print """<table>"""
+                print """<tr><td class=TextPurpleBold>An error has occured</td></tr>"""
+                print """</table>"""
+        else:
+            upd_peer = log_peer = 1 # no error can occur here
+
+
+        sql_net_upd = """UPDATE ipall_ip SET net_name='%s', description=%s, aggregated=%u, service_id=%s, allocated=%u, interface_name=%s WHERE id=%u """ \
+            % (net_name, net_description, aggregated, net_type, allocated, interface, id)
+        #print "<br>", sql_net_upd
+        update = conn.update_data(sql_net_upd)
+        
+        ### LOGGING    
+        sql_log = """INSERT INTO nms_log VALUES ('', '%s', SYSDATE(), 'ipall_ip', "%s", %u)""" % ( current_user, sql_net_upd, company )
+        log = conn.update_data(sql_log)
+        #print log
+
+        if update != 0 and log != 0 and upd_peer != 0 and log_peer != 0:
+##            print """<script language="javascript">this.close();</script>"""
+            uri = "javascript:this.close();"
+            HTML.redirect(uri)
+        else:
+            HTML.error_message("An error has occured!");
+
+    else: ### SAVE key was not pressed
+##      referer = str(os.environ['HTTP_REFERER'])
+        query = """SELECT id, label, net_name, description, peering_info_id, aggregated, path, 
+            service_id, allocated, interface_name, vrf, companies_id
+            FROM ipall_ip WHERE id=%u """ % (id)
+        details = conn.get_data(query)
+
+        rights = user.get_rights(details[0][10]) 
+        
+        if details == () or details == None:
+            print """<p class=TextPurpleBold> Nothing to display</p>"""
+            print """<a href="%s" class=LinkPurpleBold> << back </a>""" % "javascript:this.close();"
+            return
+        else:
+            if group != 1 and rights[2] != 1:
+                net_perm = conn.get_net_permissions(str(details[0][6]), group)
+                if net_perm == () or net_perm == "":
+                    net_perm = 0
+                else:
+                    net_perm = net_perm[1]
+            else:
+                net_perm = 1
+            #print net_perm
+
+            if net_perm != 1:
+                HTML.restriction_message(1)
+                HTML.popup_footer()
+                return
+
+            peering_info_id = details[0][4]
+            if peering_info_id != 0 and peering_info_id != None:
+                peering_query = """SELECT * FROM ipall_peering_info where id=%u""" % peering_info_id
+                peering_info = conn.get_data(peering_query)
+            else:
+                peering_info = ()
+            
+            print """<div id="main">"""
+            print """<form name="edit_net" method=POST action="network_edit.cgi"
+                onSubmit="return check_edit_subnet()">"""
+            print """<br><table width=800 border=0 cellspacing=0 cellpadding=0 class=TextPurple>"""
+            print """<tr>"""
+            print """<td colspan=2 class=TextPurpleBoldBig>Edit network details<br>&nbsp;</td>"""
+            print """</tr>"""
+            print """<tr class=lightPurple3 height=20>"""
+            print """<td width=200px class=TextPurpleBold>Network</td>"""
+            print """<td class=TextPurpleBold>%s</td>""" % details[0][1]
+            print """</tr><tr>"""
+            print """<td colspan=2>"""
+
+            print_network_form(details) 
+            if peering_info_id:
+                print_peering_form(peering_info)
+
+            print """</td></tr>"""      
+            print """<tr>"""
+            print """<td colspan=2>* required field</td>"""
+            print """</tr><tr>"""
+            print """<td colspan=2>&nbsp;</td>"""
+            print """</tr><tr>"""
+            print """<td colspan=2><input type=submit name=save value=save class=button></td>"""
+            print """</tr>"""
+            print """</table>"""
+            print """</form>"""
+            print """</div>"""        
+    
+    HTML.popup_footer()
+
+
+main()

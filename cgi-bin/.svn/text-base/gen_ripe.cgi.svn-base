@@ -1,0 +1,186 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import Html as HTML
+import DBmy
+import IpallUser
+from Sessionclass import Session
+import Whois
+import IPy
+import os
+import cgi
+import re
+import cgitb; cgitb.enable()
+from Cookie import SimpleCookie
+
+
+def main():
+    """description"""
+
+    ### create database connection object
+    cfg = ConfigObj("ipall.cfg")
+    db_host = cfg['Database']['db_host']
+    db_user = cfg['Database']['db_user']
+    db_pw = cfg['Database']['db_pw']
+    db = cfg['Database']['db']
+    conn = DBmy.db(db_host, db_user, db_pw, db)
+
+    ### User
+    s = Session(conn)
+    current_user = s.check_user()
+    company = s.check_cookie()
+    HTML.simple_header()
+
+    if current_user == "":
+        HTML.simple_redirect_header(cfg['Server']['web_dir'])
+        return
+    else:
+        HTML.body()
+    user = IpallUser.User(current_user)
+    group = user.get_group_id()
+
+    if group != 1: # user is not member of group "admins"
+        net_perm = 0
+    else: # user is member of group "admins"
+        net_perm = 1
+
+    if net_perm != 1:
+        HTML.restriction_message()
+        return
+
+    ### logged in user does have enough rights to 
+    else:
+        sql_decix = """SELECT DISTINCT(as_nr), as_set FROM ipall_peering_info WHERE device='de-f-c01' OR device='de_f_c01' ORDER BY as_nr, as_set"""
+        decix = conn.get_data(sql_decix)
+
+        sql_linx = """SELECT DISTINCT(as_nr), as_set FROM ipall_peering_info WHERE device='uk-l-inx' OR device='uk_l_inx' ORDER BY as_nr, as_set"""
+        linx = conn.get_data(sql_linx)
+
+        sql_vix = """SELECT DISTINCT(as_nr), as_set FROM ipall_peering_info WHERE device LIKE '%at-v-%' OR device='at_v_%' ORDER BY as_nr, as_set"""
+        vix = conn.get_data(sql_vix)
+
+
+        print """<br>"""
+#        print """<blockquote>"""
+        print """<table width=550 border=0 cellspacing=5 cellpadding=0 class=TextPurple>"""
+        print """<tr>"""
+        print """<td>"""
+        
+        # static entries
+#       print """password:       ripe1OO7<br>"""
+
+        w = Whois.whois()
+        as12793 = w.ip("as12793")
+#       print as12793
+        for l in as12793.split("\n"):
+            if l.find("VIX peerings") == -1:
+                #l = re.sub(' ', "&nbsp;", l)
+                print l, "<br>"
+            else:
+                break
+
+        print """
+            remarks:         * VIX peerings *<br>
+            remarks:         ****************<br>"""
+        for d in vix:
+            if d[1] != "" and d[1] != None and d[1] != "0":
+                print """<font class=TextPurple> 
+                    import:
+                    from AS%s accept %s<br>
+                    export:
+                    to AS%s announce AS-ETELGROUP
+                </font><br>""" % (str(d[0]), d[1], str(d[0]))
+            else:
+                print """<font class=TextPurple> 
+                    import:
+                    from AS%s accept AS%s<br>
+                    export:
+                    to AS%s announce AS-ETELGROUP
+                </font><br>""" % (str(d[0]), d[0], str(d[0]))
+
+        print """
+            remarks:        *******************<br>
+            remarks:        * DE-CIX peerings *<br>
+            remarks:        *******************<br>"""
+        for d in decix:
+            if d[1] != "" and d[1] != None and d[1] != "0":
+                print """<font class=TextPurple> 
+                    import:
+                    from AS%s accept %s<br>
+                    export:
+                    to AS%s announce AS-ETELGROUP
+                </font><br>""" % (str(d[0]), d[1], str(d[0]))
+            else:
+                print """<font class=TextPurple> 
+                    import:
+                    from AS%s accept AS%s<br>
+                    export:
+                    to AS%s announce AS-ETELGROUP
+                </font><br>""" % (str(d[0]), d[0], str(d[0]))
+
+        print """
+            remarks:&nbsp;&nbsp;        *****************<br>
+            remarks:&nbsp;&nbsp;        * LINX peerings *<br>
+            remarks:&nbsp;&nbsp;        *****************<br>"""
+        for d in linx:
+            if d[1] != "" and d[1] != None and d[1] != "0":
+                print """<font class=TextPurple> 
+                    import:
+                    from AS%s accept %s<br>
+                    export:
+                    to AS%s announce AS-ETELGROUP
+                </font><br>""" % (str(d[0]), d[1], str(d[0]))
+            else:
+                print """<font class=TextPurple> 
+                    import:
+                    from AS%s accept AS%s<br>
+                    export:
+                    to AS%s announce AS-ETELGROUP
+                </font><br>""" % (str(d[0]), d[0], str(d[0]))
+
+        mail = user.get_mail_address()
+#        year = str(localtime()[0])
+#        mon = zfill(str(localtime()[1]), 2)
+#        day = zfill(str(localtime()[2]), 2)
+#       today = year + mon + day
+        today = user.get_today()
+
+        # static entries
+        print"""
+remarks:        *******************<br>
+remarks:        eTel Austria AG has an open peering policy<br>
+remarks:        email: inoc@etel.at<br>
+remarks:        VIX peering<br>
+remarks:        IP: 193.203.0.7<br>
+remarks:        IP: 193.203.0.52<br>
+remarks:        DE-CIX peering<br>
+remarks:        IP: 80.81.192.107<br>
+remarks:        LINX peering<br>
+remarks:        IP: 195.66.224.215<br>
+remarks:        IP: 195.66.226.215<br>
+remarks:        *******************<br>"""
+        print """
+admin-c:        STS1007-RIPE<br>
+tech-c:         NOC1007-RIPE<br>
+mnt-by:         AS12793-MNT<br>
+changed:        %s&nbsp;%s<br>
+source:         RIPE<br>""" % (mail, today)
+
+
+        print """</td></tr>"""
+#        print """<tr><td>&nbsp;</td></tr>"""
+#        print """<tr><td align=right><a href="javascript:history.back();" class=LinkPurpleBold> << back </a></td></tr>"""
+        print """</table>"""
+#        print """</blockquote>"""
+        
+
+    HTML.main_footer()
+
+main()

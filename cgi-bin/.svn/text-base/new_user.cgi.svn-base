@@ -1,0 +1,257 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import Html as HTML
+import DBmy
+import IpallUser
+from Sessionclass import Session
+import IPy
+import os
+import re
+import cgi
+import cgitb; cgitb.enable()
+from Configobj import ConfigObj
+
+
+def print_newuser_form(group, rights):
+    """print a HTML form for inserting a new vrf"""
+
+    print """<form name="new_user" method=POST action="new_user.cgi" onSubmit="return check_user()">"""
+
+    print """<td>Surname *</td>"""
+    print """<td>Forename *</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="surname" name=surname size=33 class=b_eingabefeld maxlength=100></td>"""
+    print """<td><input type=text id="forename" name=forename size=33 class=b_eingabefeld maxlength=100></td>"""
+    print """</tr><tr>"""
+
+    print """<td>Mobile</td>"""
+    print """<td>Phone</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="mobile" name=mobile size=33 class=b_eingabefeld maxlength=40></td>"""
+    print """<td><input type=text id="phone" name=phone size=33 class=b_eingabefeld maxlength=40></td>"""
+    print """</tr><tr>"""
+
+    print """<td>E mail *</td>"""
+    print """<td>Web</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="mail" name=mail size=33 class=b_eingabefeld maxlength=50></td>"""
+    print """<td><input type=text id="web" name=web size=33 class=b_eingabefeld maxlength=50 value="http://"></td>"""
+    print """</tr><tr>"""
+
+    print """<td colspan=2>Username *</td>"""
+    print """</tr><tr>"""
+    print """<td colspan=2><input type=text id="username" name=username size=33 class=b_eingabefeld maxlength=30></td>"""
+    print """</tr><tr>"""
+
+    print """<td>Password (6-32 characters) *</td>"""
+    print """<td>Retype password *</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=password id="password1" name=password1 size=33 class=b_eingabefeld maxlength=32></td>"""
+    print """<td><input type=password id="password2" name=password2 size=33 class=b_eingabefeld maxlength=32></td>"""
+    print """</tr><tr>"""
+
+    if group == 1:
+        print """<td colspan=2>Company *</td>"""
+        print """</tr><tr>"""
+        get_companies()
+        print """</tr><tr>"""
+
+    if group == 1 or rights[1] == 1:
+        print """<td colspan=2>Group</td>"""
+        print """</tr><tr>"""
+        get_groups(group)
+        print """</tr><tr>"""
+        
+    print """<td>&nbsp;</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=submit id="save" name=save value=save class=button></td>"""
+    print """</tr>"""
+    
+    print """<tr><td colspan=2><div id="info"></div></td></tr>"""
+    print """</form>"""
+
+
+def get_companies():
+    """print a dropdown box with all registered companies"""
+    
+    sql_companies = """SELECT id, name FROM companies ORDER BY name"""
+    companies = conn.get_data(sql_companies)
+    
+    if companies != () and companies != None:
+        print """<td colspan=2>"""
+        print """<select id="company" name=company onChange="fillGroup('%s');" class=b_eingabefeld>""" % ( cgi_dir )
+        print """<option value="0">select company</option>"""
+        for c in companies:
+            print """<option value="%s">%s</option>""" % (str(c[0]), c[1])
+        print """</select>"""
+        print """</td>"""
+    else:
+        print """<td colspan=2>error!</td>"""
+
+def get_groups(group):
+    """print a dropdown box with groups"""
+    if group != 1:
+        sql_groups = """SELECT id, groupname FROM ipall_group WHERE id != 1 AND companies_id=%u ORDER BY groupname""" % ( company_id )
+        groups = conn.get_data(sql_groups)
+
+    print """<td colspan=2>"""
+    print """<select id="group_id" name=group_id class=b_eingabefeld>"""
+    if group == 1:
+        print """<option value="0">select company first...</option>"""
+    else:
+        print """<option value="0">select group</option>"""
+        if groups != () and groups != None:
+            for g in groups:
+                print """<option value="%s">%s</option>""" % (str(g[0]), g[1])
+    print """</select>"""
+    print """</td>"""
+          
+
+def main():
+    """create a new user object"""
+
+    global company_id, vrf, conn, cgi_dir
+    formdata = cgi.FieldStorage()
+    surname = forename = mobile = phone = mail = web = "" 
+    password = password1 = password2 = username = ""
+    company = group_id = 0
+    
+
+    ### create database connection object
+    cfg = ConfigObj("ipall.cfg")
+    db_host = cfg['Database']['db_host']
+    db_user = cfg['Database']['db_user']
+    db_pw = cfg['Database']['db_pw']
+    db = cfg['Database']['db']
+    conn = DBmy.db(db_host, db_user, db_pw, db)
+
+    ### User
+    s = Session(conn)
+    current_user = s.check_user()
+    HTML.simple_header()
+
+    if current_user == "":
+        HTML.simple_redirect_header(cfg['Server']['web_dir'])
+        return
+    else:
+        HTML.body()
+
+    user = IpallUser.User(current_user)
+    group, company_id  = user.get_group_id()
+    cgi_dir = cfg['Server']['cgi_dir']
+    if group == 0:
+        HTML.restriction_message()
+        return
+    ### logged in user does have enough rights to 
+    else:
+        try:
+            #if formdata.has_key("uri"):
+                #uri = str(formdata['uri'].value)
+            if formdata.has_key("surname"):
+                surname = str(formdata['surname'].value)
+            if formdata.has_key("forename"):
+                forename = str(formdata['forename'].value)
+            if formdata.has_key("mobile"):
+                mobile = str(formdata['mobile'].value)
+            if formdata.has_key("phone"):
+                phone = str(formdata['phone'].value)
+            if formdata.has_key("mail"):
+                mail = str(formdata['mail'].value)
+            if formdata.has_key("web"):
+                web = str(formdata['web'].value)
+            if formdata.has_key("password1"):
+                password1 = str(formdata['password1'].value)
+            if formdata.has_key("password2"):
+                password2 = str(formdata['password2'].value)
+            if formdata.has_key("username"):
+                username = str(formdata['username'].value)
+            if formdata.has_key("group_id"):
+                group_id = int(formdata['group_id'].value)
+            if formdata.has_key("company"):
+                company = int(formdata['company'].value)
+        except:
+            print """<script language="javascript">alert("Please fill out all fields marked with asterisks!"); history.back();</script> """
+
+    rights = user.get_rights()
+
+    if group != 1 and rights[1] != 1 and rights[2] != 1: 
+        HTML.restriction_message()
+        return
+
+    ### SAVE button has been pressed
+    if formdata.has_key("save"):
+        print "<br>"
+
+        password = password1
+        if group == 1 or rights[1] == 1:
+            if group_id == 0:
+                print """<script language="javascript">alert("Please select a group!"); history.back();</script> """; return;
+        if group == 1:
+            if company == 0:
+                print """<script language="javascript">alert("Please select a company!"); history.back();</script> """; return;
+        else:
+            company = company_id
+   
+        sql_check = """SELECT persons_id FROM persons WHERE username='%s'""" \
+            % (username)
+        check = conn.get_data(sql_check)
+        
+        if check != ():
+            print """<table>"""
+            print """<tr><td class=TextPurpleBold>Username already exists!</td></tr>"""
+            print """<tr><td><a href="javascript:history.back();" class=linkPurpleBold> << back </a></td></tr>"""
+            print """</table>"""
+            return
+        else:
+            sql_person = """INSERT INTO `persons` 
+                ( `persons_id` , `surname` , `forename` , `mobile` , `phone` , `mail` , `web` , `username` , `password` , `companies_id`) 
+                VALUES ('', '%s', '%s', '%s' , '%s', '%s', '%s', '%s', MD5('%s'), %u)""" \
+                % ( surname, forename, mobile, phone, mail, web, username, password, company )
+            user_id = conn.insert_data(sql_person)
+            sql_group = """INSERT INTO ipall_user_group ( `username` , `group_id` )
+                VALUES ( '%s', %u )""" % ( username, group_id )
+            group_ok = conn.update_data(sql_group)
+            
+
+        ### LOGGING
+        log_string = re.sub( "MD5\('(.)*'\)", "PASSWORD", sql_person )
+        sql_log = """INSERT INTO nms_log VALUES ('', '%s', SYSDATE(), 'persons', "%s", %u)""" % (current_user, log_string, company)
+        log = conn.insert_data(sql_log)
+        
+        if user_id != 0 and group_ok != 0:
+            uri = "%s/mgmt_user.cgi" % (cgi_dir)
+            HTML.redirect(uri)
+        else:
+            HTML.error_message("An error has occured!")
+            return
+        
+    ### SAVE button has not been pressed
+    else:
+        print """<br>"""
+        print """<div class=TextPurple>"""
+        print """<table class=table_main border=0><tr class=lightPurple3 height=20>"""
+        print """<td colspan=2 class=TextPurpleBoldBig>Insert a new user</td>""" 
+        print """</tr>"""
+        print """<tr><td colspan=2>&nbsp;</td></tr><tr>"""
+
+        print_newuser_form(group, rights)
+
+        print """<tr><td colspan=2>&nbsp;</td>"""
+        print """</tr><tr>"""
+        print """<td colspan=2>* required field</td>"""
+        print """</tr>"""
+        print """<tr><td colspan=2 align=right><a href="%s/mgmt_user.cgi" class=LinkPurpleBold> << back </a></td></tr>""" % cgi_dir
+        print """</table>"""
+        print """</div>"""
+
+    HTML.main_footer()
+
+main()

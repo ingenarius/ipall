@@ -1,0 +1,180 @@
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import string
+import DBmy
+from Configobj import ConfigObj
+
+
+class Node:
+    """Netrork-tree node"""
+
+    def __init__(self, rights, net_perm, depth, path, vrf, urlpath="0"):
+
+        self._cfg_ = ConfigObj("ipall.cfg")
+        (self._create_, self._user_admin_, self._company_admin_) = rights
+        ### rights of the logged in user(group)
+        (self._delete_, self._edit_, self._subnet_, self._view_net_) = net_perm
+        ### URL path of a selected network
+        self._urlpath_ = urlpath
+        ### path of the network, stored in database
+        self._path_ = path						                                    
+        self._vrf_ = str(vrf)
+        ### how many parents a subnet has
+        self._depth_ = 	depth						
+        ### the last id in the path -> direct parent id of selected node
+        self._selected_ = int(self._urlpath_.split(":")[len(self._urlpath_.split(":"))-1])	
+        self._cgi_dir_ = self._cfg_['Server']['cgi_dir']
+        self._ipall_dir_ = self._cfg_['Server']['ipall_dir']
+        self._db_host_ = self._cfg_['Database']['db_host']
+        self._db_user_ = self._cfg_['Database']['db_user']
+        self._db_pw_ = self._cfg_['Database']['db_pw']
+        self._db_ = self._cfg_['Database']['db']
+        self._conn_ = DBmy.db(self._db_host_, self._db_user_, self._db_pw_, self._db_)
+
+
+    def print_plus(self, subnetted, id):
+        """prints a plus sign before a tree node if there are available subnets
+        subnetted   ...     1: a node has childs; 0: a node has no childs
+        id          ...     id of the current network"""
+        for r in range(0, (self._depth_ - 1) ):
+            print """<td width=20>"""
+        if subnetted == 1:
+            print """<a href="?%s&%s#%s">
+                <img src=%s/images/ftv2pnode.gif border=0>
+                </a>""" % ( self._vrf_, self._path_, str(id), self._ipall_dir_ )
+        else:
+            print """&nbsp;"""
+        for r in range(0, (self._depth_ - 1) ):
+            print """</td>"""
+
+
+    def print_minus(self, subnetted, id):
+        """prints a minus sign before a tree node if there are available subnets
+        id	    ...	    id of the current network"""
+
+        new_path = self._path_[:self._path_.rfind(":")]
+
+        for r in range(0, (self._depth_ - 1) ):
+            print """<td width=20>"""
+        if subnetted == 1:
+            print """<a href="?%s&%s#%s">
+                <img src=%s/images/ftv2mnode.gif border=0>
+                </a>""" % ( self._vrf_, new_path, str(id), self._ipall_dir_ )
+        else:
+            print """&nbsp;"""
+
+        for r in range(0, (self._depth_ - 1) ):
+            print """</td>"""
+
+
+    def print_empty(self):
+        """print empty cells for not subnetted nodes"""
+
+        for r in range(0, (self._depth_ - 1) ):
+            print """<td width=20>&nbsp;"""
+            print """</td>"""
+
+
+    def print_node(self, n, selected=0, bold=0):
+        """print the label of the network node
+        n   ...	    network node (only one)"""
+
+        if n[7] == 1:
+            if bold == 1 and n[14] == 0:
+                css = "LinkPurpleBold"
+            elif bold == 1 and n[14] == 1:
+                css = "LinkPurpleBoldItalic"
+            elif bold == 0 and n[14] == 1:
+                css = "LinkPurpleItalic"
+            else:
+                css = "LinkPurple"
+        
+            print """<td>"""
+            if selected == 0:
+                print """<a href="?%s&%s#%s" class=%s>
+                    %s [%s]
+                    </a>
+                    <a name="%s">&nbsp;</a>""" % ( self._vrf_, self._path_, str(n[0]), css, str(n[2]), str(n[4]), str(n[0]) )
+            else:
+                new_path = self._path_[:self._path_.rfind(":")]
+                print """<a href="?%s&%s#%s" class=%s>
+                    %s [%s]
+                    </a>
+                    <a name="%s">&nbsp;</a>""" % ( self._vrf_, new_path, str(n[0]), css, str(n[2]), str(n[4]), str(n[0]) )
+            print """</td>"""
+    
+        else:
+            if bold == 1 and n[14] == 0:
+                css = "textPurpleBold"
+            elif bold == 1 and n[14] == 1:
+                css = "textPurpleBoldItalic"
+            elif bold == 0 and n[14] == 1:
+                css = "textPurpleItalic"
+            else:
+                css = "textPurple"
+
+            print """<td>"""
+            print """<font class=%s>%s [%s]</font><a name="%s">&nbsp;</a>""" % ( css, str(n[2]), str(n[4]), str(n[0]) )
+            print """</td>"""
+
+
+    def print_actions(self, id, allocated, bold=0):
+        """print the action linkss for a node depending of the rights a user(group) has
+        id	...	id of the current node
+        bold	...	1: text style bold; 0: text style normal"""
+
+        print """<td width=220 align=right>"""
+
+        if self._view_net_ == 1:
+            print """<img src="%s/images/viewOff.png" id="view" onMouseOver="mouseoverImage(this, '%s');"  
+                onMouseOut="mouseoverImage(this, '%s');" onClick="popup('%s/network_view.cgi?%s');" class=handlers />""" \
+                    % ( self._ipall_dir_, self._ipall_dir_, self._ipall_dir_, self._cgi_dir_, id )
+            print """<img src="%s/images/printOff.png" id="print" onMouseOver="mouseoverImage(this, '%s');"  
+                onMouseOut="mouseoverImage(this, '%s');" onClick="popup('%s/network_print.cgi?%s');" class=handlers />""" \
+                    % ( self._ipall_dir_, self._ipall_dir_, self._ipall_dir_, self._cgi_dir_, id )
+            if self._edit_ == 1:
+                print """<img src="%s/images/editOff.png" id="edit" onMouseOver="mouseoverImage(this, '%s');"  
+                    onMouseOut="mouseoverImage(this, '%s');" onClick="popup('%s/network_edit.cgi?%s');" class=handlers />""" \
+                        % ( self._ipall_dir_, self._ipall_dir_, self._ipall_dir_, self._cgi_dir_, id )
+            if self._subnet_ == 1:
+                print """<img src="%s/images/subnetOff.png" id="subnet" onMouseOver="mouseoverImage(this, '%s');"  
+                    onMouseOut="mouseoverImage(this, '%s');" onClick="popup('%s/network_subnet.cgi?%s');" class=handlers />""" \
+                        % ( self._ipall_dir_, self._ipall_dir_, self._ipall_dir_, self._cgi_dir_, id )
+            if self._subnet_ == 1 and self._company_admin_ == 1:
+                print """<img src="%s/images/importOff.png" id="import" onMouseOver="mouseoverImage(this, '%s');"  
+                    onMouseOut="mouseoverImage(this, '%s');" onClick="popup('%s/network_upload_csv.cgi?%s');" class=handlers />""" \
+                        % ( self._ipall_dir_, self._ipall_dir_, self._ipall_dir_, self._cgi_dir_, id )
+            if self._delete_ == 1:
+                print """<img src="%s/images/deleteOff.png" id="delete" onMouseOver="mouseoverImage(this, '%s');"  
+                    onMouseOut="mouseoverImage(this, '%s');" 
+                    onClick="confirm_and_redirect('Do you really want to delete this network?', '%s/network_delete.cgi?%s&%s&%s');" class=handlers />""" \
+                        % ( self._ipall_dir_, self._ipall_dir_, self._ipall_dir_, self._cgi_dir_, self._vrf_, self._path_, id )
+        if self._user_admin_ == 1:
+##            sql_group_rights = """SELECT g.groupname, r.delete_net, r.edit_net, r.subnet_net, r.view_net
+##            FROM ipall_rights r, ipall_group g WHERE r.path like '%s%s' AND r.group_id=g.id """ % ("%", id)
+##            group_rights = self._conn_.get_data(sql_group_rights)
+##            if group_rights != () and group_rights != None:
+##                p = """Permissions: """
+##                for r in group_rights:
+##                    if r[1] == 1: d = "delete, "; 
+##                    else: d="";
+##                    if r[2] == 1: e = "edit, "; 
+##                    else: e="";
+##                    if r[3] == 1: s = "subnet, "; 
+##                    else: s="";
+##                    if r[4] == 1: v = "view"; 
+##                    else: v="";
+##                    p = p + str(r[0]) + ":" + str(d) + str(e) + str(s) + str(v) + "\n"
+##            else:
+##                p = """edit permissions of the network"""
+            print """<img src="%s/images/permissionOff.png" id="permission" onMouseOver="mouseoverImage(this, '%s');"  
+                onMouseOut="mouseoverImage(this, '%s');" onClick="popup('%s/network_permissions.cgi?%s');" class=handlers />""" \
+                    % ( self._ipall_dir_, self._ipall_dir_, self._ipall_dir_, self._cgi_dir_, id )
+        print """</td>"""
+

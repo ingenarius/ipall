@@ -1,0 +1,80 @@
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import IPy
+
+
+def calc_networks(id, parent, mask, conn):
+    """calculate available subnetworks
+        input:	id of the parent network, parent network, subnetmask for new networks, database connection object
+        return:	tuple of networks"""
+                
+    sql_childs = """SELECT id, label FROM ipall_ip WHERE parent_id=%u ORDER BY label""" % id
+    childs = conn.get_data(sql_childs)
+    new_nets = []
+    if mask != 32:
+        start_net = parent.strNormal(0) + "/" + str(mask)
+    else:
+        start_net = str(int(parent.strDec()) + 1) + "/" + str(mask)
+    start_net = IPy.IP(start_net)
+    new_nets = get_subnets(parent, start_net, mask)
+##    if mask == 32:
+##        print str(parent.broadcast())
+        #new_nets = new_nets.remove( str(parent.broadcast() ) )
+    
+    if childs != () and childs != None:
+        for child in childs:
+            new_nets = check_net(new_nets, child)
+    #else:
+        #new_nets = get_subnets(parent, start_net, mask)
+    
+    return new_nets
+
+
+def get_subnets(parent, start_net, mask):
+    """calculate all possible subnets
+        input:	parent network, first subnet (CIDR), subnetmask
+        return:	list object of all net subnets"""
+
+    new_nets = []
+    new_nets = new_nets.__add__([start_net.strNormal(1)])
+    next_net = IPy.IP(int(start_net.strDec()) + start_net.len())
+    next_net = IPy.IP(next_net.strNormal(0) + "/" + str(mask)) 
+    new_nets = new_nets.__add__([next_net.strNormal(1)])
+    
+    while parent.overlaps(next_net.strNormal()) > 0:
+        next_net = IPy.IP(int(next_net.strDec()) + start_net.len())
+        next_net = IPy.IP(next_net.strNormal(0) + "/" + str(mask))
+        ### don't add the broadcast address
+        if mask == 32 and int(IPy.IP(str(next_net.net())).strDec()) < int(IPy.IP(str(parent.broadcast())).strDec()):
+            new_nets = new_nets.__add__([next_net.strNormal(1)])
+        elif mask != 32 and int(IPy.IP(str(next_net.broadcast())).strDec()) <= int(IPy.IP(str(parent.broadcast())).strDec()):
+            new_nets = new_nets.__add__([next_net.strNormal(1)])
+    
+    return new_nets
+
+
+def check_net(netlist, child):
+    """check if one network is overlapping another
+        input:	list object of networks, current already used network
+        return:	new list object of networks"""
+        
+    child = IPy.IP(child[1])
+    to_del = []
+    for n in netlist:
+        net = IPy.IP(n)
+        if child.overlaps(n) == 1 or child.overlaps(n) == int('-1'):
+            to_del = to_del.__add__([n])
+            #netlist.remove(n)
+   
+    for d in to_del: 
+        netlist.remove(d)
+            
+    return netlist
+
+

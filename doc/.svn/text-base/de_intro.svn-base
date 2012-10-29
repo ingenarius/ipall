@@ -1,0 +1,66 @@
+<table class="table_main" border="0">
+
+  <tbody>
+
+    <tr align="right">
+
+      <td style="text-align: left;" colspan="2" rowspan="1">
+      <table style="text-align: left; width: 100%;" border="0" cellpadding="0" cellspacing="0">
+
+        <tbody>
+
+          <tr class="lightPurple3">
+
+            <td style="text-align: left; width: 33%;"><a href="cgi_dir/documentation.cgi?de_index"><span class="TextBlack">&lt;&lt;
+zur&uuml;ck</span></a></td>
+
+            <td style="text-align: center;"><a href="cgi_dir/documentation.cgi?de_index">index</a></td>
+
+            <td style="text-align: right; width: 33%;"><a href="cgi_dir/documentation.cgi?de_1">weiter &gt;&gt;</a></td>
+
+          </tr>
+
+        </tbody>
+      </table>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td colspan="2" rowspan="1"> <br>
+
+       <div style="text-align: center;"><span style="font-weight: bold;">Anleitung</span> <br>
+
+        <a class="LinkPurple" href="cgi_dir/documentation.cgi?de_intro">Deutsch</a> / 
+        <a class="LinkPurple" href="cgi_dir/documentation.cgi?en_intro">Englisch</a><br>
+       </div>
+      <span class="TextPurpleBoldBig"></span><span class="TextPurpleBoldBig"><br>
+
+      </span>
+      <div style="text-align: left; margin-left: 40px; margin-right: 40px;">
+      
+      <span class="TextPurpleBoldBig">Einleitung</span><br></div>
+      
+      <div style="text-align: justify; margin-left: 40px; margin-right: 40px;" class="TextPurple">
+            <br>
+            In einem gro&#223;en IT Betrieb werden viele IP Adressen (Prefixes) f&#252;r die verschiedensten Services vergeben. 
+            Damit diese korrekt arbeiten k&#246;nnen, ist es wichtig, sie zu dokumentieren. Es ist genauso wichtig zu erfassen, 
+            welche Adressen sind im Eigengebrauch und welche sind zum Beispiel an Kunden "verliehen" worden
+            (im Zuge eines Produktes, das der Kunde f&#252;r eine bestimmte Laufzeit gekauft hat). <br>
+            F&#252;r Internet Service Provider (ISP) ist es abgesehen von der eigenen Dokumentation mindestens genauso wichtig 
+            diese IP Adressen der jeweiligen "Regional Internet Registry" (RIR)  mitzuteilen. In Europa ist dies RIPE NCC.
+            Dienstleistungen sind in unserer heutigen Zeit das Um und Auf in der IT Branche. Darum ist ein Produkt, dass man seinen 
+            Kunden weiterverkaufen kann immer eine Investition in die Zukunft. Das Schlagwort, das hier zum Tragen kommt,
+            lautet Mandantenf&#228;higkeit. <br>
+            Diese Teile zusammenaddiert ergeben IP@LL.
+            <br>
+      </div>
+
+      </td>
+
+    </tr>
+
+  </tbody>
+</table>

@@ -1,0 +1,135 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import Html as HTML
+import DBmy
+import IpallUser
+from Sessionclass import Session
+import Whois
+import IPy
+import os
+import re
+import cgi
+import cgitb; cgitb.enable()
+from Configobj import ConfigObj
+
+
+def main():
+    """delete a View/VRF if it is empty"""
+
+    if os.environ.has_key('QUERY_STRING') and os.environ['QUERY_STRING'] != "":
+        qs = os.environ['QUERY_STRING']
+        if len(qs.split("&")) == 1:
+            rd = str(qs.split("&")[0])
+        else:
+            rd = "NULL"
+    else:
+        rd = "NULL"
+
+    ### create database connection object
+    cfg = ConfigObj("ipall.cfg")
+    db_host = cfg['Database']['db_host']
+    db_user = cfg['Database']['db_user']
+    db_pw = cfg['Database']['db_pw']
+    db = cfg['Database']['db']
+    conn = DBmy.db(db_host, db_user, db_pw, db)
+
+    ### User
+    s = Session(conn)
+    current_user = s.check_user()
+    HTML.simple_header()
+    if current_user == "":
+        HTML.simple_redirect_header(cfg['Server']['web_dir'])
+        return
+    else:
+        HTML.body()
+    user = IpallUser.User(current_user)
+    group, company_id  = user.get_group_id()
+    cgi_dir = cfg['Server']['cgi_dir']
+    if group == 0:
+        HTML.restriction_message()
+        return
+
+    if rd == "NULL":
+        print """<br>"""
+        print """<blockquote>"""
+        print """<p class=TextPurpleBold>No Prefix found to delete </p>"""
+        print """<a href="javascript:history.back();" class=LinkPurpleBold> << back </a>"""
+        print """</blockquote>"""
+        return
+
+    if group != 1:
+        vrf_perm = conn.get_vrf_permissions(rd, group)
+        if vrf_perm == ():
+            vrf_perm = 0
+        else:
+            vrf_perm = vrf_perm[1]
+    else:
+        vrf_perm = 1 
+    #print vrf_perm
+        
+    if vrf_perm != 1:
+        HTML.restriction_message() 
+        return 
+
+    ### logged in user does have enough rights to 
+
+    sql_nets = """SELECT id FROM ipall_ip WHERE vrf='%s' """ % rd
+    nets = conn.get_data(sql_nets)
+    #print nets
+
+    print """<br>"""
+    print """<div class=TextPurple>"""
+    print """<table border=0 class=table_main><tr height=20>"""
+
+    if nets == () or nets == None:
+
+        sql_company = """SELECT companies_id FROM networks WHERE vpn_rd='%s' """ % ( rd )
+        company = conn.get_data(sql_company)[0][0]
+
+        ### NO child networks are present
+        sql_rights_del = """DELETE FROM ipall_rights where path='%s'""" % str(rd)
+        del_rights = conn.update_data(sql_rights_del)
+        #del_rights = 1
+        ### LOGGING
+        sql_log = """INSERT INTO nms_log VALUES ('', '%s', SYSDATE(), 'ipall_rights', "%s", %u)""" % (current_user, sql_rights_del, company)
+        log = conn.update_data(sql_log)
+        #log = 1
+
+        sql_del = """DELETE FROM networks WHERE vpn_rd='%s' """ % rd
+        #print sql_del + "<br>"
+        delete = conn.update_data(sql_del)
+        #delete = 1
+
+        ### LOGGING
+        log_string = sql_del
+        sql_log = """INSERT INTO nms_log VALUES ('', '%s', SYSDATE(), 'ipall_ip', "%s", %u)""" % (current_user, log_string, company)
+        log = conn.update_data(sql_log)
+        #log = 1
+
+        if delete != 0 and log != 0:
+            uri = "%s/index.cgi" % cgi_dir
+            HTML.redirect(uri)
+        else:   ### delete != 1
+            print """<td class=TextPurpleBold>An error has occured!</td>"""
+            print """</tr><tr>"""
+            print """<td align=right><a href="javascript:history.back();"> << back </a></td>"""
+    else:	### network has child networks
+        print """<td class=TextPurpleBold>There are networks present. You can't delete this View/VRF</td>"""
+        print """</tr><tr>"""
+        print """<td align=right><a href="%s/index.cgi"> << back </a></td>""" % (cgi_dir)
+        
+        print """</tr>"""
+        print """</table>"""
+    
+
+    HTML.main_footer()
+
+main()

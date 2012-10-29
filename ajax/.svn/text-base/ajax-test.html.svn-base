@@ -1,0 +1,13 @@
+<html>
+<head>
+<title>AJAX test page</title>
+<script type="text/javascript" src="ajax.js"></script>
+</head>
+<body>
+	<form name="myForm">
+		Name: <input type="text" onkeyup="ajaxFunction('/cgi-bin/ajax/test.py?xyz;123', 'time');" name="username" id="username" /><br>
+		Time: <div id="time"></div>
+	</form>
+
+</body>
+</html>

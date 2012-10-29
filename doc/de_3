@@ -1,0 +1,193 @@
+<table border="0" class="table_main">
+  <tbody>
+    <tr align="right">
+      <td rowspan="1" colspan="2" style="text-align: left;"> 
+      <table style="text-align: left; width: 100%;" border="0" cellpadding="0" cellspacing="0">
+        <tbody>
+          <tr class="lightPurple3">
+            <td style="text-align: left; width: 33%;">
+                <a href="cgi_dir/documentation.cgi?de_2">&lt;&lt; zur&uuml;ck</a>
+            </td>
+            <td style="text-align: center;">
+                <a href="cgi_dir/documentation.cgi?de_index">index</a></td>
+            <td style="text-align: right; width: 33%;">
+                <!-- <a href="cgi_dir/documentation.cgi?de_4">weiter &gt;&gt;</a> -->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td rowspan="1" colspan="2"> <br>
+      <!--Sprachenwahl-->
+      <div style="text-align: center;">
+        <span style="font-weight: bold;">Anleitung</span><br>
+            <a class="LinkPurple" href="cgi_dir/documentation.cgi?de_3">Deutsch</a> / 
+            <a class="LinkPurple" href="cgi_dir/documentation.cgi?en_3">Englisch</a><br>
+        <br>
+      </div>
+      <!--Ueberschrift-->
+      <div style="text-align: left; margin-left: 40px; margin-right: 40px;">
+        <span class="TextPurpleBoldBig"><!-- text here --></span><br>
+      </div>
+
+      <!--Blocksatz fuer text - BEGINN-->
+      <div style="text-align: justify; margin-left: 40px; margin-right: 40px;" class="TextPurple">
+
+           <div class="TextPurpleBoldBig">Management</div><br>
+            Um die im folgenden Beschriebenen Funktionen nutzen zu k&#246;nnen, m&#252;ssen nat&#252;rlich 
+            die entsprechenden Berechtigungen vorhanden sein. <br>
+            Hinter dem Men&#252;punkt "Management" verbergen sich s&#228;mtliche Hilfsmittel, um sowohl
+            Mandanten (companies), Benutzer (users), Gruppen (groups), View/VRF Berechtigungen (view/vrf group rights)
+            als auch Netzwerktypen (network types) zu verwalten. Auch das Logging aller in IP@LL get&#228;tigten Aktionen
+            kann von hier aus angesehen werden.
+            <br><br>
+
+           <div class="TextPurpleBold">Companies</div> <a name="companies"></a>
+            Der Administrator sieht hier eine Liste aller angelegten Mandanten (sortiert aufsteigend nach Name), 
+            die er dann anschlie&#223;end bearbeiten (Symbol: Bleistift) oder l&#246;schen (Symbol: rotes X) kann. 
+            Nat&#252;rlich k&#246;nnen hier auch neue Mandanten (new company) angelegt werden.<br>
+            Legt man einen neuen Mandanten an, oder editiert einen Vorhandenen, kann hier auch festgelegt werden, 
+            ob dieser einen LIR (Local Internet Regitry) Status hat. Falls ja m&#252;ssen einige Zusatzinformationen 
+            angegeben werden. Wichtig ist (damit die optik nicht leidet) das Format der Felder "RIR Header" und 
+            "RIR Trailer". Bsp.: (Die Zahlen bezeichen die Spalten-/Zeichennummer in der Zeile)<br><br>
+            <div style="border: solid 1px #000000;">
+              <div class="TextCode">
+                <b>Schl&#252;sselwort&nbsp;Beschriftung</b>
+              </div>
+              <div class="TextCode" style="border-bottom: dotted 1px #000000;">
+                <b>1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;15</b>
+              </div>
+              <div class="TextPurple" style="border-bottom: dotted 1px #000000; text-align: center;">
+                Automatisch generierter Teil #1
+              </div>
+              <div class="TextCode">
+                aut-num:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AS4711
+              </div>
+              <div class="TextCode">
+                as-name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NAME
+              </div>
+              <div class="TextCode">
+                descr:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Beschreibung
+              </div>
+              <div class="TextPurple" style="border-bottom: dotted 1px #000000; border-top: dotted 1px #000000; text-align: center;">
+                AS Header
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;************************* (25 Sterne)
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;UPSTREAM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************
+              </div>
+              <div class="TextCode">
+                import:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;from ASabc accept&nbsp;&nbsp;&nbsp;ANY
+              </div>
+              <div class="TextCode">
+                export:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;&nbsp;&nbsp;ASabc announce AS-MACRO
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;CUSTOMER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************
+              </div>
+              <div class="TextCode">
+                import:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;from ASabc accept&nbsp;&nbsp;&nbsp;AS-MACRO
+              </div>
+              <div class="TextCode">
+                export:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;to&nbsp;&nbsp;&nbsp;ASabc announce ANY
+              </div>
+              <div class="TextPurple" style="border-bottom: dotted 1px #000000; border-top: dotted 1px #000000; text-align: center;">
+                AS Trailer
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;peering policy
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mail: peering@company.com
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VIX peering
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;IP: 193.203.0.xx
+              </div>
+              <div class="TextPurple" style="border-bottom: dotted 1px #000000; border-top: dotted 1px #000000; text-align: center;">
+                Automatisch generierter Teil #2
+              </div>
+              <div class="TextCode">
+                remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************
+              </div>
+              <div class="TextCode">
+                admin-c:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ADMINxyz-RIPE
+              </div>
+              <div class="TextCode">
+                tech-c:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NOCxyz-RIPE
+              </div>
+              <div class="TextCode">
+                mnt-by:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ASxyz-MNT
+              </div>
+              <div class="TextCode">
+                changed:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;someone@company.com 20070703
+              </div>
+              <div class="TextCode">
+                source:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RIPE
+              </div>
+            </div>
+            (Vorlage: einfach "copy &#038; paste")
+            <br><br>
+
+           <div class="TextPurpleBold">Users</div> <a name="users"></a>
+            Der Administrator sieht hier eine Liste aller angelegten Benutzer, unterteilt in Mandantengruppen, mit 
+            jeweils Vor- und Nachname und dem Benutzernamen in eckiger Klammer.
+            Jeder Benutzer kann bearbeitet (Symbol: Bleistift) oder gel&#246;scht (Symbol: rotes X) werden.
+            Auch neue Benutzer (new user) k&#246;nnen angelegt werden.
+            <br><br>
+
+           <div class="TextPurpleBold">Groups</div> <a name="groups"></a>
+            Der Administrator sieht hier eine Liste aller angelegten Benutzergruppen, unterteilt nach Mandanten.
+            Jede Gruppe kann bearbeitet (Symbol: Bleistift) oder gel&#246;scht (Symbol: rotes X) werden.
+            Neue Gruppen (new group) k&#246;nnen pro Mandant angelegt werden.
+            <br><br>
+
+           <div class="TextPurpleBold">View/VRF group rights</div> <a name="vrf_group_rights"></a>
+            Der Administrator sieht hier eine Liste aller angelegten Views/VRFs, gruppiert nach Mandanten.
+            Jeder View kann bearbeitet (Symbol: Bleistift) werden. Hier wird festgelegt, welche Benutzergruppen
+            f&#252;r den jeweiligen View die Berechtigung erh&#228;lt neue Superbl&#246;cke anzulegen (sogenannte 
+            root nodes).
+            <br><br>
+
+           <div class="TextPurpleBold">Network types</div> <a name="network_types"></a>
+            Der Administrator sieht hier eine Liste aller Netzwerktypen, die im System angelegt sind, sortiert nach
+            dem Namen.<br>
+            Nur die nachtr&#228;glich selbst definierten Typen k&#246;nnen gel&#246;scht (Symbol: rotes X) werden.
+            Bei jedem eigenen Typ kann eingestellt werden, ob hier BGP Peerings dokumentiert werden sollen und welche Farben
+            in der Baumansicht verwendet werden (Schrift- und Hintergrundfarbe). <br>
+            Per Default sind Peerings nur bei "Backbone Linknet", "Customer Linknet" und nat&#252;rlich "Peering LAN" m&#246;glich.
+            <br><br>
+
+           <div class="TextPurpleBold">Logging</div> <a name="logging"></a>
+            Das Logging ist f&#252;r den Administrator eines der wichtigsten Mittel, um die Nachvollziehbarkeit aller
+            get&#228;tigten Aktionen gew&#228;hrleisten zu k&#246;nnen.<br>
+            Mit Hilfe von Filtern (Datum, Benutzer, Tabelle, Suchbegriff) kann die Auswahl der Angezeigten Log Eintr&#228;ge
+            eingeschr&#228;nkt werden.
+            <br><br>
+
+      </div> <!--Blocksatz fuer text - ENDE-->
+      <!--text ende-->
+      </td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>

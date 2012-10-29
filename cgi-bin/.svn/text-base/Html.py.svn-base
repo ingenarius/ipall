@@ -1,0 +1,141 @@
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import os
+from Cookie import SimpleCookie
+from Configobj import ConfigObj
+
+global cfg, version, ipall_dir, cgi_dir, web_dir
+cfg = ConfigObj("ipall.cfg")
+version = cfg['General']['version']
+company_name = cfg['General']['company_name']
+company_url = cfg['General']['company_url']
+ipall_dir = cfg['Server']['ipall_dir']
+cgi_dir = cfg['Server']['cgi_dir']
+web_dir = cfg['Server']['web_dir']
+doc_prefer = cfg['Server']['doc_prefer']
+
+
+def restriction_message(popup=0):
+    """print a restriction message"""
+
+    print """<div border=0 class=table_main>"""
+    print """<div class=textPurpleBold>You are not allowed to execute this</div>"""
+    if popup == 0:
+        print """<div><a href="javascript:history.back();" class=linkPurpleBold> << back</a></div>"""
+    print """</div>"""
+
+    
+def error_message(text, url="javascript:history.back();"):
+    """print an error message with a special text"""
+
+    print """<div border=0 class=table_main>"""
+    print """<div class=textPurpleBold>%s</div>""" % str(text)
+    print """<div><a href="%s" class=linkPurpleBold> << back</a></div>""" % url 
+    print """</div>"""   
+
+
+def notify_message(text):
+    """print a message with a special text"""
+
+    print """<div border=0 class=table_main>"""
+    print """<span class=textPurpleBold>%s</span>""" % str(text)
+    print """</div>"""   
+
+
+def redirect(url):
+    """redirect to url"""
+    #print cookie
+    print """<html><head><title>IP@LL</title>"""
+    print """<meta http-equiv="refresh" content="0; url=%s" />""" % url
+    print """</head>"""
+
+
+def simple_redirect_header(url):
+    """redirect to another site"""
+    print "Content-type: text/html\n\n"
+    print """<html><head><title>IP@LL</title>"""
+    print """<meta http-equiv="refresh" content="0; url=%s" />""" % url
+    print """</head>"""
+
+
+def simple_header(sel_color=0):
+    """only print HTML header without any navigation bar"""
+    
+    print "Content-type: text/html\n\n"
+    print """<html><head><title>IP@LL</title>"""
+    print """<link href="%s/ipall_style.css" rel="stylesheet" type="text/css">""" % ipall_dir
+    #print """<link href="%s/thickbox.css" rel="stylesheet" type="text/css">""" % ipall_dir
+    print """<script type="text/javascript" src="%s/utils/ipall_utils.js"></script>""" % ipall_dir
+    print """<script type="text/javascript" src="%s/utils/ajax.js"></script>""" % ipall_dir
+    print """<script type="text/javascript" src="%s/utils/contextmenu.js"></script>""" % ipall_dir
+    print """<script type="text/javascript" src="%s/utils/mootools.js"></script>""" % ipall_dir
+    #print """<script type="text/javascript" src="%s/utils/jquery.js"></script>""" % ipall_dir
+    #print """<script type="text/javascript" src="%s/utils/thickbox.js"></script>""" % ipall_dir
+    if sel_color == 1:
+        print """<script type="text/javascript" src="%s/utils/301a.js"></script>""" % ipall_dir
+    print """</head>"""
+
+
+def popup_body():
+    """initialize popup window"""
+    print """<body onLoad="checkPopup();">"""
+
+
+def body():
+    """print top navigation and logo of IP@LL"""
+
+    print """<body bgcolor="#FFFFFF">"""
+    print """<table border=0 class=table_index>
+  <tbody>
+    <tr>
+      <td style="text-align: center;"><a href="%s"><img src="%simages/logo0.gif" width=120 border=0></a></td>
+      <td style="text-align: center;"><span class="ipall_heading">IP@LL</span>
+        <span class="TextBlackSmall">v%s</span>
+      <div style="text-align: right;" class="TextBlackSmall">&copy; 2007 
+        <a href="%s" target="_blank">%s</a></div>
+      </td>
+    </tr>
+    <tr>
+      <td width=200>
+        <a class="LinkPurpleBold" href="%slogout.php">logout</a>
+      </td>
+      <td>
+      <!-- <a class="LinkPurpleBold" href="%s">home</a>&nbsp; &nbsp; -->
+      <a class="LinkPurpleBold" href="%s/index.cgi">view/vrf</a>&nbsp; &nbsp;
+<!--
+      <a class="LinkPurpleBold" href="%s/search.cgi">search</a>&nbsp; &nbsp;
+      <a class="LinkPurpleBold" href="%s/register_as.cgi">register AS</a>&nbsp; &nbsp;
+      <a class="LinkPurpleBold" href="%s/peering_stats.cgi">peering statistics</a>&nbsp; &nbsp;
+-->
+      <a class="LinkPurpleBold" href="%s/mgmt.cgi">management</a>&nbsp; &nbsp;
+      <a class="LinkPurpleBold" href="%s/documentation.cgi?%s_index" target="_blank">documentation</a>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2">""" %(web_dir, web_dir, version, company_url, company_name, web_dir, web_dir, cgi_dir, cgi_dir, cgi_dir, cgi_dir, cgi_dir, cgi_dir, doc_prefer)
+
+
+
+def main_footer():
+    """close HTML site"""
+    
+    print """</td></tr>"""
+    print """<tr><td colspan=2> <div id="foot" class="table_main" align=right></div> </td></tr>"""
+    print """</tbody>"""
+    print """</table>"""
+    print """</body>"""
+    print """</html>"""
+
+
+def popup_footer():
+    """close HTML site"""
+
+    print """<div id="foot" class="table_main" align=right></div>"""
+    print """</body>"""
+    print """</html>"""

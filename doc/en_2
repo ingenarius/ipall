@@ -1,0 +1,438 @@
+<table class="table_main" border="0">
+
+  <tbody>
+
+    <tr align="right">
+
+      <td style="text-align: left;" colspan="2" rowspan="1">
+      <table style="text-align: left; width: 100%;" border="0" cellpadding="0" cellspacing="0">
+
+        <tbody>
+
+          <tr class="lightPurple3">
+
+            <td style="text-align: left; width: 33%;"><a href="cgi_dir/documentation.cgi?en_1"><span class="TextBlack">&lt;&lt;
+back</span></a></td>
+
+            <td style="text-align: center;"><a href="cgi_dir/documentation.cgi?en_index">index</a></td>
+
+            <td style="text-align: right; width: 33%;"><a href="cgi_dir/documentation.cgi?en_3">next &gt;&gt;</a></td>
+
+          </tr>
+
+        </tbody>
+      </table>
+
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td colspan="2" rowspan="1"> <br>
+
+      <div style="text-align: center;"><span style="font-weight: bold;">Documentation</span><br>
+
+      <a class="LinkPurple" href="cgi_dir/documentation.cgi?de_2">German</a>
+/ <a class="LinkPurple" href="cgi_dir/documentation.cgi?en_2">English</a><br>
+
+      <span class="TextPurpleBoldBig"></span><span class="TextPurpleBoldBig"><br>
+
+      </span>
+      <div style="text-align: left; margin-left: 40px;"><span class="TextPurpleBoldBig">Networks / Prefixes</span><br>
+
+      <div style="text-align: justify;"><span class="TextPurple"><br>
+
+      </span><span class="LinkPurple TextPurple">Nach
+der Auswahl einer IP Adressgruppe (VPN oder Internet) werden alle
+dokumentierten, bereits vergebenen, Netzwerke in einer hierarchischen
+Baumstruktur angezeigt. </span><span class="LinkPurple TextPurple">Neben jedem Netzwerk sind
+f&uuml;r folgende Aktionen Symbole angeordnet.<br>
+
+      </span>
+      <ul>
+
+        <li><span class="LinkPurple TextPurple">view</span></li>
+
+        <li><span class="LinkPurple TextPurple">print</span></li>
+
+        <li><span class="LinkPurple TextPurple">edit</span></li>
+
+        <li><span class="LinkPurple TextPurple">subnet</span></li>
+
+        <li><span class="LinkPurple TextPurple">import<br>
+
+          </span></li>
+
+        <li><span class="LinkPurple TextPurple">delete</span></li>
+
+        <li><span class="LinkPurple TextPurple">permissions</span></li>
+
+      </ul>
+
+      </div>
+
+      <div style="text-align: justify;"><br>
+
+      </div>
+
+      <span class="TextPurpleBold">Funktionen<br>
+
+      <br>
+
+      </span><span class="TextPurple">F&uuml;r
+alle, im Folgenden beschriebenen Funktionen muss der Benutzer die
+entsprechenden Rechte besitzen, um sie ausf&uuml;hren zu
+k&ouml;nnen. Jeder der der Gruppe "Super Adminstratoren" </span><span class="TextPurple">angeh&ouml;rt, darf alle Funktionen
+des Tools uneingeschr&auml;nkt verwenden.<br>
+
+      <br>
+
+      <a name="new_network"></a></span><span class="TextPurple TextPurpleBoldItalic">New
+network </span><span class="TextPurple"><br>
+
+      </span>
+      <div style="text-align: justify;"><span class="TextPurple">Einf&uuml;gen eines Netzwerk
+Superblocks (z.B.: 172.25.0.0/16) Hier gibt es keine
+Auswahlm&ouml;glichkeiten, um den Prefix einzugeben. Er muss per
+Hand eingegeben werden </span><span class="TextPurple">(ACHTUNG:
+nur &Uuml;berpr&uuml;fung auf g&uuml;ltigkeit der
+Netzadresse).</span><br>
+
+      <span class="TextPurple">Ausserdem m&uuml;ssen
+noch ein Netzname und optional ein Netztyp bzw. eine l&auml;ngere
+Beschreibung eingegeben werden.</span><br>
+
+      <span class="TextPurple">Das Attribut "allocated"
+besagt, dass das anzulegende Netzwerk ein Block ist, der f&uuml;r
+den ausgew&auml;hlten Verwendungszweck zur Verf&uuml;gung
+stehen soll. Z.B.: 172.25.4.0/24 </span><span class="TextPurple">wird als VPN Customer Linknet angelegt
+und zus&auml;tzlich mit dem Flag "allocated". Das Netz wird also
+&uuml;berall aufscheinen (Workflow, Search) wo ich mir
+Bl&ouml;cke zur </span><span class="TextPurple">Netzvergabe
+suchen m&ouml;chte.</span><br>
+
+      <span class="TextPurple">Das Attribut "aggregated"
+hat keinerlei funktionelle Bedeutung. Es dient ausschlie&szlig;lich
+zur Information, ob das Netzwerk als ganzes im Routing aufscheint, oder
+nicht.</span><br>
+
+      <span class="TextPurple"></span></div>
+
+      <span class="TextPurple"><br>
+
+      <a name="type_permission"></a><span class="TextPurpleBoldItalic">Type permission<br>
+
+      </span></span>
+      <div style="text-align: justify;"><span class="TextPurple">Es
+k&ouml;nnen hier die Rechte von allen Netzwerken eines bestimmten
+Verwendungszweckes auf einmal ver&auml;ndert werden.<br>
+
+      <br>
+
+      </span><span class="TextPurple">Ein Beispiel:
+Eine bestimmte Benutzergruppe soll s&auml;mtliche Rechte
+f&uuml;r
+"Customer Linknets" bekommen.</span><br>
+
+      <ol>
+
+        <li><span class="TextPurple">Netzwerktyp
+"Customer Linknet" ausw&auml;hlen,</span></li>
+
+        <li><span class="TextPurple">Gruppe&nbsp;ausw&auml;hlen,</span></li>
+
+        <li><span class="TextPurple">die
+entsprechenden Rechte anhacken</span></li>
+
+        <li><span class="TextPurple">auf den "save"
+Button klicken</span></li>
+
+      </ol>
+
+      <span class="TextPurpleBoldItalic"><a name="view"></a>View
+&nbsp; <img alt="" src="../images/viewOn.png"></span><br>
+
+      <div style="text-align: justify;"><span class="TextPurple">Die Detailansicht eines Prefixes kann
+folgende Informationen anzeigen:</span><br class="TextPurple">
+
+      <ul>
+
+        <li><span class="TextPurple">Network - der
+Prefix selbst</span></li>
+
+        <ul>
+
+          <li><span class="TextPurple">Name - der
+Kurzname oder eine Kurzbeschreibung</span></li>
+
+          <li><span class="TextPurple">Network Type
+- Typenbezeichnung</span></li>
+
+          <li><span class="TextPurple">Interface -
+Name des Interfaces, das in dem Netzwerk ist</span></li>
+
+          <li><span class="TextPurple">Description -
+Raum f&uuml;r Bemerkungen</span></li>
+
+        </ul>
+
+        <li><span class="TextPurple">Peering
+Information</span></li>
+
+        <ul>
+
+          <li><span class="TextPurple">AS -
+Autonomous System Number des Peering Partners</span></li>
+
+          <li><span class="TextPurple">AS-SET - AS
+Makro bei RIPE</span></li>
+
+          <li><span class="TextPurple">MD5 Password
+- Klartext Passwort f&uuml;r die BGP Session</span></li>
+
+          <li><span class="TextPurple">Session -
+UP/DOWN</span></li>
+
+          <li><span class="TextPurple">Contact - NOC
+email adresse</span></li>
+
+          <li><span class="TextPurple">Peering
+device - Router, auf dem die BGP session aufgesetzt ist</span></li>
+
+          <li><span class="TextPurple">Comment -
+Raum f&uuml;r Bemerkungen</span></li>
+
+        </ul>
+
+      </ul>
+
+      <span class="TextPurple">Die Funktion "config
+on|off" (in der ersten Zeile) zeigt bzw. verbirgt die
+Konfigurationszeilen, die mindestens ben&ouml;tigt werden, um das
+Peering auf einem Cisco oder Juniper </span><span class="TextPurple">Router in Betrieb zu nehmen.</span><br class="TextPurple">
+
+      <span class="TextPurple">Die Funktion "show|hide
+ripe" bietet dieselbe Funktionalit&auml;t, wie sie schon bei
+"subnet" beschrieben wird. Ein bereits angelegtes Netzwerk kann hiermit
+nachtr&auml;glich noch bei </span><span class="TextPurple">RIPE
+registriert werden (sollte allerdings im Zuge des erstmaligen
+Erstellens schon passieren!)</span><br>
+
+      </div>
+
+      <br>
+
+      <span class="TextPurpleBoldItalic"><a name="print"></a>Print
+&nbsp; </span><span class="TextPurpleBoldItalic"><img alt="" src="../images/printOn.png"></span><br>
+
+      <span class="TextPurple">Die Druckansicht listet den
+ausgew&auml;hlten Prefix und wirklich alle darunterliegenden auf
+und verschafft somit einen Gesamt&uuml;berblick &uuml;ber alle
+vergebenen Netzbereiche eines Prefixes.<br>
+
+      <br>
+
+      <a name="edit"></a><span class="TextPurpleBoldItalic">Edit &nbsp; </span></span><span class="TextPurpleBoldItalic"><img alt="" src="../images/editOn.png"></span><span class="TextPurple"><span class="TextPurpleBoldItalic"></span><br>
+
+L&auml;sst alle Details (siehe "View") eines Pr&auml;fixes
+&auml;ndern.<br>
+
+      <br>
+
+      <span class="TextPurpleBoldItalic"><a name="subnet"></a>Subnet &nbsp; </span></span><span class="TextPurpleBoldItalic"><img alt="" src="../images/subnetOn.png"></span><span class="TextPurple"><span class="TextPurpleBoldItalic"></span><br>
+
+Mit Hilfe dieser Funktion lassen sich z.B.: Kundennetze, Linknetze,
+etc. vergeben. Dazu m&uuml;ssen in dieser Reihenfolge folgende
+Arbeitsschritte gemacht werden:<br>
+
+      </span>
+      <ul>
+
+        <li><span class="TextPurple">Prefixinformationen</span></li>
+
+        <ul>
+
+          <li><span class="TextPurple">Netmask -
+Auswahl der Prefixl&auml;nge (z.B.: /30)</span></li>
+
+          <li><span class="TextPurple">Network -
+Auswahl des freien Netzwerkes (es werden nur g&uuml;ltige, freie
+Netze zur Auswahl angeboten)</span></li>
+
+          <li><span class="TextPurple">Network name
+- Kurzbeschreibung (z.B.: Kundenname, Verwendungszweck, ...)</span></li>
+
+          <li><span class="TextPurple">Network
+allocated - Prefix ist f&uuml;r eine bestimmte Verwendung
+(-&gt; Network Type) vorgesehen</span></li>
+
+          <li><span class="TextPurple">Network
+aggregated - reine Information, ob der Prefix so im Routing vorkommt</span></li>
+
+          <li><span class="TextPurple">Interface -
+Dabei handelt es sich um eine reine (Text-)Information, welches
+optische (channalised STM-1) Interface (z.B.: Serial4/0/0.1/1/5/3:0)
+dem Kunden des</span></li>
+
+          <li><span class="TextPurple">Netzwerkes
+zugeordnet ist. Die Funktion list</span></li>
+
+          <li><span class="TextPurple">gibt eine
+vollst&auml;ndige Liste aller channalised STM-1 Interfaces aus, und
+welcher Kunde dahinter angeschlossen ist. Somit kann ein Interface,
+neben welchem</span></li>
+
+          <li><span class="TextPurple">kein Eintrag
+vorhanden ist, als frei betrachtet werden und mittels "copy &amp;
+paste" in die vorige Maske eingef&uuml;gt werden. Der Name muss in
+dieser Form</span></li>
+
+          <li><span class="TextPurple">eingetragen
+werden, da das Skript ihn andernfalls nicht ber&uuml;cksichtigen
+w&uuml;rde!</span></li>
+
+          <li><span class="TextPurple">Description -
+Raum f&uuml;r Bemerkungen</span></li>
+
+          <li><span class="TextPurple">Network Type
+- Verwendungszweck (falls die Eintr&auml;ge nicht klar sind, bitte
+die help Funktion benutzen)</span></li>
+
+        </ul>
+
+      </ul>
+
+      <ul>
+
+        <li><span class="TextPurple">Peering
+Informationen</span></li>
+
+        <ul>
+
+          <li><span class="TextPurple">Checkbox
+"Peering @ internet exchange" - Prefix ist Peering Adresse, oder nicht</span></li>
+
+          <li><span class="TextPurple">AS Number -
+Autonomous System Number</span></li>
+
+          <li><span class="TextPurple">AS set - AS
+Makro bei RIPE</span></li>
+
+          <li><span class="TextPurple">MD5 Password
+- Klartext Passwort f&uuml;r die BGP Session</span></li>
+
+          <li><span class="TextPurple">Session -
+Checkbox for UP/DOWN</span></li>
+
+          <li><span class="TextPurple">Available at
+routeserver - Die Prefixe des Partners k&ouml;nnen auch
+&uuml;ber den routeserver bekommen werden</span></li>
+
+          <li><span class="TextPurple">Contact - NOC
+email adresse</span></li>
+
+          <li><span class="TextPurple">Peering
+device - Router, auf dem die BGP session aufgesetzt ist (bei mehreren
+devices (VIX) k&ouml;nnen auch mehrere Namen eingegeben werden.
+Dabei sind die</span></li>
+
+          <li><span class="TextPurple">Namen durch
+einen Strichpunkt (;) zu trennen (bitte kein Leerzeichen dazwischen!))</span></li>
+
+          <li><span class="TextPurple">Comment -
+Raum f&uuml;r Bemerkungen</span><br>
+
+          </li>
+
+        </ul>
+
+      </ul>
+
+      <span class="TextPurple"></span>
+      <div style="text-align: justify;"><span class="TextPurple"><br>
+
+Ist die Checkbox Register network at ripe.net markiert, dann
+&ouml;ffnet sich nach dem Eintrag in die Datenbank eine neue Seite,
+die noch Kundeninformationen erfordert, und anschlie&szlig;end
+automatisch ein Email and auto-dbm@ripe.net verschickt, um das neue
+Netz dort zu registrieren.<br>
+
+      <br>
+
+      <span class="TextPurpleBoldItalic"><a name="import"></a>Import &nbsp; </span></span><span class="TextPurpleBoldItalic"><img alt="" src="../images/importOn.png"></span><span class="TextPurple"><span class="TextPurpleBoldItalic"></span><br>
+
+Hier kann man eine CSV Datei hochladen, die alle Informationen zu den
+direkt vergebenen Subnetzen enth&auml;lt. Das genaue Format der CSV
+Datei ist auf der import Seite genau beschrieben. Hier ist zu beachten,
+dass die Datei ein komplettes Set von <span style="text-decoration: underline;">allen</span>
+Subnetzen enth&auml;lt, da die bestehenden Subnetze dabei erst
+gel&ouml;scht werden.<br>
+
+      <br>
+
+      </span><span class="TextPurple"></span><span class="TextPurple"></span><span class="TextPurpleBold TextPurple"></span><span class="TextPurple"></span></div>
+
+      </div>
+
+      <ul style="text-align: justify;" class="TextPurple">
+
+      </ul>
+
+      <div style="text-align: justify;"><span class="TextPurpleBoldItalic"><a name="delete"></a>Delete
+&nbsp; </span><span class="TextPurpleBoldItalic"><img alt="" src="../images/deleteOn.png"></span><br>
+
+      <span class="TextPurple">Mit Hilfe dieser Funktion
+kann der Prefix gel&ouml;scht werden, sofern unter ihm nicht noch
+welche eingetragen (vergeben) sind. -&gt; Keine rekursive
+L&ouml;schfunktion!<br>
+
+      <br>
+
+      <br>
+
+      <span class="TextPurpleBoldItalic"><a name="permissions"></a>Permissions &nbsp; </span></span><span class="TextPurpleBoldItalic"><img alt="" src="../images/permissionOn.png"></span><span class="TextPurple"><span class="TextPurpleBoldItalic"></span><br>
+
+Diese Funktion erlaubt dem Admin einer anderen Benutzergruppe bestimmte
+Rechte auf diesen einen Prefix (und alle darunterliegenden), zu
+vergeben. Folgende Berechtigungen k&ouml;nnen erteilt werden:<br>
+
+      </span>
+      <ul>
+
+        <li><span class="TextPurple">Delete Network
+- Benutzer darf den Prefix l&ouml;schen</span></li>
+
+        <li><span class="TextPurple">Edit Network -
+Benutzer darf die Informationen zu dem Prefix ver&auml;ndern</span></li>
+
+        <li><span class="TextPurple">Subnet Network
+- Benutzer darf Netzwerke vergeben</span></li>
+
+        <li><span class="TextPurple">View Network -
+Benutzer darf den Prefix &uuml;berhaupt erst sehen und auch
+ausdrucken</span></li>
+
+      </ul>
+
+      </div>
+
+      </div>
+
+      <div style="text-align: justify;"></div>
+
+      </div>
+
+      <div style="text-align: justify;"></div>
+
+      </td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+<br>
+
+</body>
+</html>

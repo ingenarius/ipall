@@ -1,0 +1,68 @@
+<table class="table_main" border="0">
+  <tbody>
+    <!--header table - BEGINN-->
+    <tr align="right">
+      <td style="text-align: left;" colspan="2" rowspan="1"> 
+      <table style="text-align: left; width: 100%;" border="0" cellpadding="0" cellspacing="0">
+        <tbody>
+          <tr class="lightPurple3">
+            <td style="text-align: left; width: 33%;">
+                &nbsp;
+            </td>
+            <td style="text-align: center;">
+                <span class="TextPurpleBoldBig">&#220;ber IP@LL</span>
+            </td>
+            <td style="text-align: right; width: 33%;">
+                &nbsp;
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+    </tr>
+    <!--header table - ENDE-->
+    <tr>
+      <td colspan="2" rowspan="1"> <br>
+      <!--Sprachenwahl-->
+      <div style="text-align: center;">
+            <a class="LinkPurple" href="cgi_dir/documentation.cgi?de_about">Deutsch</a> / 
+            <a class="LinkPurple" href="cgi_dir/documentation.cgi?en_about">Englisch</a><br>
+        <br>
+      </div>
+      <!--Ueberschrift-->
+      <div style="text-align: left; margin-left: 40px; margin-right: 40px;">
+        <span class="TextPurpleBoldBig">&#220;ber IP@LL</span><br>
+      </div>
+
+      <!--Blocksatz fuer text - BEGINN-->
+      <div style="text-align: justify; margin-left: 40px; margin-right: 40px;" class="TextPurple">
+           <div><br>
+            IP@ll wurde entwickelt von racyAPz, einem kleinen &#246;sterreichischen Unternehmen,
+            das sich auf Webapplikationen spezialisiert hat. Seine Hauptaufgabe liegt darin, Service
+            Providern viel von dem Aufwand der IP Dokumentation - sowohl Lokal, als auch bei der 
+            jeweiligen Regional Internet Registry - abzunehmen. Der gro&#223;e Vorteil einer webbasierenden
+            Datenbankanwendung liegt darin, dass mehrere Benutzer gleichzeitig arbeiten k&#246;nnen. 
+            Aufgrund von verschiedenen Sicherheitsmechanismen k&#246;nnen auch keine Netze doppelt vergeben werden.
+            Es bieten sich viele Vorteile gegen&#252;ber herk&#228;mlichen Tabellen oder Textdateien.
+           </div>
+           
+           <div class="TextPurpleBold"><br>Versionshistorie</div>
+
+           <div>
+            1.0
+           </div>
+           <div style="text-align: justify; margin-left: 10px; margin-right: 10px;">
+            F&#252;r genaue Beschreibungen lesen sie die Dokumentation des jeweiligen Abschnittes<br>
+            <ul id="toclist">
+                <li><a href="cgi_dir/documentation?de_1">View/VRF</a></li>
+                <li><a href="cgi_dir/documentation?de_2">Netzwerke</a></li>
+                <li><a href="cgi_dir/documentation?de_3">Management</a></li>
+            </ul>
+           </div>
+
+      </div> <!--Blocksatz fuer text - ENDE-->
+      <!--text ende-->
+      </td>
+    </tr>
+  </tbody>
+</table>

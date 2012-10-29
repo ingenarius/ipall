@@ -1,0 +1,313 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import Html as HTML
+import DBmy
+import IpallUser
+from Sessionclass import Session
+import IPy
+import os
+import re
+import cgi
+import cgitb; cgitb.enable()
+from Configobj import ConfigObj
+from Cookie import SimpleCookie
+from string import zfill
+
+
+
+def get_table_names():
+    """get a list of table names which are logged"""
+
+    sql_table_names = """SELECT DISTINCT(table_name) FROM nms_log ORDER BY table_name"""
+    table_names = conn.get_data(sql_table_names)
+    return table_names
+
+
+def get_years():
+    """get all years where log entries are in the database table"""
+
+    sql_years = """SELECT DISTINCT(YEAR(time)) FROM nms_log ORDER BY YEAR(time)"""
+    years = conn.get_data(sql_years)
+    return years
+
+
+def get_user_names():
+    """get all users who has done some changes in NMS"""
+
+    sql_user_names = """SELECT DISTINCT(user) FROM nms_log ORDER BY user"""
+    user_names = conn.get_data(sql_user_names)
+    return user_names
+
+
+def get_companies():
+    """get all companies from the db"""
+
+    sql_companies = """SELECT id, name FROM companies ORDER BY name"""
+    companies = conn.get_data(sql_companies)
+    return companies
+
+
+def print_from_date():
+    """print table with dropdown boxes for day-month-year"""
+
+    print """<table width=100% border=0 cellspacing=0 cellpadding=0 class=TextPurple>"""
+    print """<tr>"""
+    print """<td width=60px>date</td>"""
+    print """<td width=100px>"""
+    print """<select name=day_from class=b_eingabefeld_50>"""
+    print """<option value="%">day</option>"""
+    for r in range(1, 32):
+        print """<option value=%s>%s</option>""" % (zfill(str(r),2), zfill(str(r),2))
+    print """</select>"""
+    print """</td>"""    
+    print """<td width=100px>"""
+    print """<select name=month_from class=b_eingabefeld_50>"""
+    print """<option value="%">mon</option>"""
+    for r in range(1, 13):
+        print """<option value=%s>%s</option>""" % (zfill(str(r),2), zfill(str(r),2))
+    print """</select>"""
+    print """</td>""" 
+    print """<td>"""
+    print """<select name=year_from class=b_eingabefeld_50>"""   
+    print """<option value="%">year</option>"""
+    years = get_years()
+    for y in years:
+        print """<option value=%s>%s</option>""" % (str(y[0]), str(y[0]))
+    print """</select>"""
+    print """</td>"""    
+
+    print """</tr>"""
+    print """</table>"""
+
+
+def print_pattern():
+    """print text field for user input"""
+
+    print """<table width=100% border=0 cellspacing=0 cellpadding=0 class=TextPurple>"""
+    print """<tr>"""
+    print """<td width=60px>search</td>"""
+    print """<td>"""
+    print """<input type=text name=pattern class=b_eingabefeld>"""
+    print """</td>"""
+    print """</tr>"""
+    print """</table>"""
+
+
+
+def print_tables():
+    """print html table with sql table name entries in a dropdownbox"""
+
+    print """<table width=100% border=0 cellspacing=0 cellpadding=0 class=TextPurple>"""
+    print """<tr>"""
+    print """<td width=60px>table</td>"""
+    print """<td>"""
+    print """<select name=table_name class=b_eingabefeld>"""
+    print """<option value="%">all tables</option>"""
+    tables = get_table_names()
+    if tables != ():
+        for t in tables:
+            print """<option value="%s">%s</option>""" % (str(t[0]), str(t[0]))
+    print """</select>"""
+    print """</td>"""
+    print """</tr>"""
+    print """</table>"""
+    
+
+def print_users():
+    """print html table with all users who did changes in NMS"""
+    
+    print """<table width=100% border=0 cellspacing=0 cellpadding=0 class=TextPurple>"""
+    print """<tr>"""
+    print """<td width=60px>user</td>"""
+    print """<td>"""
+    print """<select name=user_name class=b_eingabefeld>"""
+    print """<option value="%">any user</option>"""
+    users = get_user_names()
+    if users != ():
+        for u in users:
+            print """<option value="%s">%s</option>""" % (str(u[0]), str(u[0]))
+    print """</select>"""
+    print """</td>"""
+    print """</tr>"""
+    print """</table>"""
+
+
+def print_companies():
+    """print html table with all companies"""
+
+    print """<table width=100% border=0 cellspacing=0 cellpadding=0 class=TextPurple>"""
+    print """<tr>"""
+    print """<td width=60px>company</td>"""
+    print """<td>"""
+    print """<select name=company class=b_eingabefeld>"""
+    print """<option value="%">any company</option>"""
+    companies = get_companies()
+    if companies != ():
+        for c in companies:
+            print """<option value="%s">%s</option>""" % (str(c[0]), str(c[1]))
+    print """</select>"""
+    print """</td>"""
+    print """</tr>"""
+    print """</table>"""
+
+
+
+def main():
+    """LOG viewer"""
+
+    global conn
+    formdata = cgi.FieldStorage()
+    day_from = month_from = year_from = day_to = month_to = year_to = company = table_name = user_name = pattern = ""
+
+    try:
+        if formdata.has_key("day_from"):
+            day_from = str(formdata['day_from'].value)
+        if formdata.has_key("month_from"):
+            month_from = str(formdata['month_from'].value)
+        if formdata.has_key("year_from"):
+            year_from = str(formdata['year_from'].value)
+        if formdata.has_key("company"):
+            company = str(formdata['company'].value)
+        if formdata.has_key("table_name"):
+            table_name = str(formdata['table_name'].value)
+        if formdata.has_key("user_name"):
+            user_name = str(formdata['user_name'].value)
+        if formdata.has_key("pattern"):
+            pattern = str(formdata['pattern'].value)
+    except ValueError, e:
+        print "Error: %s" % e
+        print """<script language="javascript">alert("Value parse error, sorry!"); history.back();</script> """
+        return
+
+    ### create database connection object
+    cfg = ConfigObj("ipall.cfg")
+    db_host = cfg['Database']['db_host']
+    db_user = cfg['Database']['db_user']
+    db_pw = cfg['Database']['db_pw']
+    db = cfg['Database']['db']
+    conn = DBmy.db(db_host, db_user, db_pw, db)
+
+    ### user
+    s = Session(conn)
+    current_user = s.check_user()
+    #company = s.check_cookie()
+    HTML.simple_header()
+    if current_user == "":
+        HTML.simple_redirect_header(cfg['Server']['web_dir'])
+        return
+    else:
+        HTML.body()
+    user = IpallUser.User(current_user)
+    group, company_id  = user.get_group_id()
+    rights = user.get_rights()
+    cgi_dir = cfg['Server']['cgi_dir']
+    ipall_dir = cfg['Server']['ipall_dir']
+    
+    if group == 0:
+        HTML.restriction_message()
+        return
+
+    elif group != 1 and rights[1] != 1 and rights[2] != 1:
+        HTML.restriction_message()
+        HTML.main_footer()
+        return
+    else: 
+        ### logged in user does have enough rights to 
+        print """<br>"""
+        print """<div id="main" class=TextPurple>"""
+        print """<form name="view_logs" method=POST action="log_viewer.cgi">"""
+        print """<table class="table_main" border=0 cellspacing=5 cellpadding=0 class=TextPurple>"""
+        print """<tr class=lightPurple3 height=20>"""
+        print """<td class=TextPurpleBold>View Logs</td>"""
+        print """</tr>"""
+        print """<tr><td>&nbsp;</td></tr>"""
+        
+        print """<tr><td>"""
+        print_from_date()
+        print """</td></tr>"""
+        if group == 1:
+            print """<tr><td>"""
+            print_companies()
+            print """</td></tr>"""
+        print """<tr><td>"""
+        print_tables()
+        print """</td></tr>"""
+        print """<tr><td>"""
+        print_users()
+        print """</td></tr>"""
+        print """<tr><td>"""
+        print_pattern()
+        print """</td></tr>"""
+        print """<tr><td>"""
+        print """<input type=submit name=send value=send class=button>"""
+        print """</td></tr>"""
+
+        print """<tr><td>&nbsp;</td></tr>"""
+        print """<tr><td align=right><a href="%s/mgmt.cgi" class=LinkPurpleBold> << back </a></td></tr>""" % ( cgi_dir )
+        print """</table>"""
+        print """</form>"""
+        
+        if formdata.has_key("send"):
+            #date_from = year_from + "-" + month_from + "-" + day_from
+            #date_to = year_to + "-" + month_to + "-" + day_to
+            # SELECT sql_statement FROM nms_log WHERE (YEAR(time) >= '2006' AND MONTH(time) >= '05' AND DAY(time) >= '%') OR 
+            #(YEAR(time) <= '2006' AND MONTH(time) <= '06' AND DAY(time) <= '%') AND table_name LIKE '%' AND sql_statement LIKE '%%'
+            if user_name == "%": user_name = " LIKE '%'";
+            else: user_name = "= '" + user_name + "'"
+            if group != 1:
+                company = "= '" + str(company_id) + "'"
+            else:
+                if company == "%": company = " LIKE '%'";
+                else: company = "= '" + str(company) + "'";
+            if table_name == "%": table_name = " LIKE '%'";
+            else: table_name = "= '" + table_name + "'"
+            if day_from == "%": day_from = " LIKE '%'";
+            else: day_from = "= '" + day_from + "'"
+            if month_from == "%": month_from = " LIKE '%'";
+            else: month_from = "= '" + month_from + "'"
+            if year_from == "%": year_from = " LIKE '%'";
+            else: year_from = "= '" + year_from + "'"
+            if pattern.find("'") != -1 or pattern.find("\"") != -1 or pattern.find("%") != -1:  
+                print """<script language="javascript">alert("Do not use single or double quotes!"); history.back();</script> """; return;
+
+            sql_search = """SELECT time, user, table_name, sql_statement FROM nms_log WHERE 
+                (table_name %s) AND 
+                (sql_statement LIKE '%s%s%s') AND 
+                (user %s) AND
+                (YEAR(time) %s AND MONTH(time) %s AND DAY(time) %s) AND
+                (companies_id %s)
+                ORDER BY time DESC""" \
+                % (table_name, "%", pattern, "%", user_name, year_from, month_from, day_from, company)
+
+            #print sql_search
+            result = conn.get_data(sql_search)
+
+            if result != ():
+                print """<table class="table_main" border=1 cellspacing=0 cellpadding=0 class=TextPurple>"""
+                print """<th>date</th>"""
+                print """<th>user</th>"""
+                print """<th>table</th>"""
+                print """<th>sql statement</th>"""
+                for r in result:
+                    print """<tr>"""
+                    print """<td width=150px>%s</td>""" % str(r[0])
+                    print """<td width=70px>%s</td>""" % str(r[1])
+                    print """<td width=70px>%s</td>""" % str(r[2])
+                    print """<td>%s</td>""" % re.sub( "MD5\('(.)*'\)", "PASSWORD", str(r[3]) )
+                    print """</tr>"""
+                print """</table>"""
+            else:
+                HTML.notify_message("Sorry, no matches found!")
+        print """</div>"""
+
+    HTML.main_footer()
+
+main()

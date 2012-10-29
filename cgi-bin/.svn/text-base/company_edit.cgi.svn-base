@@ -1,0 +1,366 @@
+#!/usr/bin/python2.4
+
+"""
+*****************************
+IP@LL IP addressmanagement
+Copyright 2007 racyAPz
+http://www.racyapz.at
+*****************************
+"""
+
+import Html as HTML
+import DBmy
+import IpallUser
+from Sessionclass import Session
+import os
+import re
+import cgi
+import cgitb; cgitb.enable()
+from Configobj import ConfigObj
+from Cookie import SimpleCookie
+
+
+
+def print_company_form(id, details, group):
+    """print html form to edit company details
+                  0     1            2        3             4            5     6        7      8
+        details: name, description, street, street_number, postal_code, city, country, as_nr, as_set
+         9            10            11             12          13            14           15           16
+        ripe_header, ripe_trailer, ripe_password, ripe_mntby, ripe_admin_c, ripe_tech_c, ripe_notify, is_lir """
+
+    print """<input type=hidden name=id value="%s">""" % (id)
+    
+    print """<td>Name *</td>"""
+    print """<td>Description</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="name" name=name size=33 class=b_eingabefeld maxlength=100 value="%s"></td>""" % (details[0][0])
+    print """<td><textarea id="descr" name=descr class=b_eingabefeld rows=5 >%s</textarea>""" % (details[0][1])
+    print """</tr><tr>"""
+
+    print """<td>Street *</td>"""
+    print """<td>Nr *</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="street" name=street size=33 class=b_eingabefeld maxlength=50 value="%s"></td>""" % (details[0][2])
+    print """<td><input type=text id="street_number" name=street_number size=33 class=b_eingabefeld maxlength=10 value="%s"></td>""" % (details[0][3])
+    print """</tr><tr>"""
+
+    print """<td>Postal Code *</td>"""
+    print """<td>City *</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="postal_code" name=postal_code size=33 class=b_eingabefeld maxlength=8 value="%s"></td>""" % (details[0][4])
+    print """<td><input type=text id="city" name=city size=33 class=b_eingabefeld maxlength=30 value="%s"></td>""" % (details[0][5])
+    print """</tr><tr>"""
+
+    print """<td>Send mail on deleting a prefix</td>"""
+    print """<td>"delete prefix" notify email address **</td>"""
+    print """</tr><tr>"""
+    if details[0][17] == 1:
+        print """<td><input type=checkbox id="send_delete_mail" name=send_delete_mail checked></td>"""
+    else:
+        print """<td><input type=checkbox id="send_delete_mail" name=send_delete_mail></td>"""
+    print """<td><input type=text id="delete_mail" name=delete_mail size=33 class=b_eingabefeld maxlength=250 value="%s"></td>""" % (details[0][18])
+    print """</tr><tr>"""
+
+
+    print """<td colspan=2>Company is LIR</td>"""
+    print """</tr><tr>"""
+    if details[0][16] == 1:
+        print """<td clospan=2><input type=checkbox id="is_lir" name=is_lir checked></td>"""
+    else:
+        print """<td clospan=2><input type=checkbox id="is_lir" name=is_lir></td>"""
+    print """</tr><tr>"""
+
+    print """<td>RIR password ***</td>"""
+    print """<td>RIR mnt-by ***</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="ripe_password" name=ripe_password size=33 class=b_eingabefeld maxlength=200 value="%s"></td>""" % (details[0][11])
+    print """<td><input type=text id="ripe_mntby" name=ripe_mntby size=33 class=b_eingabefeld maxlength=200 value="%s"></td>""" % (details[0][12])
+    print """</tr><tr>"""
+
+    print """<td>AS number ***</td>"""
+    print """<td>AS-SET</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="as_nr" name=as_nr size=33 class=b_eingabefeld maxlength=200 value="%s"></td>""" % (details[0][7])
+    print """<td><input type=text id="as_set" name=as_set size=33 class=b_eingabefeld maxlength=200 value="%s"></td>""" % (details[0][8])
+    print """</tr><tr>"""
+
+    print """<td>RIR admin-c ***</td>"""
+    print """<td>RIR tech-c ***</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="ripe_admin_c" name=ripe_admin_c size=33 class=b_eingabefeld maxlength=200 value="%s"></td>""" % (details[0][13])
+    print """<td><input type=text id="ripe_tech_c" name=ripe_tech_c size=33 class=b_eingabefeld maxlength=200 value="%s"></td>""" % (details[0][14])
+    print """</tr><tr>"""
+
+    print """<td>RIR and notify email address ***</td>"""
+    print """<td>Country Code (2 letters) ***</td>"""
+    print """</tr><tr>"""
+    print """<td><input type=text id="ripe_notify" name=ripe_notify size=33 class=b_eingabefeld maxlength=200 value="%s"></td>""" % (details[0][15])
+    print """<td><input type=text id="country" name=country size=33 class=b_eingabefeld maxlength=200 value="%s"></td>""" % (details[0][6])
+    print """</tr><tr>"""
+
+    print """<td colspan=2>&nbsp;</td>"""
+    print """</tr><tr>"""
+
+    print """<td colspan=2>RIR AS header (<b><a href="javascript:void(0);" class="HelpAS" 
+        title="layout example :: // RIR AS HEADER - start (automatically written)<br>
+aut-num:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ASxyz<br>
+as-name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NAME<br>
+descr:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; something<br>
+// RIR AS HEADER (manually written)<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************(25 stars delimiter)<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* UPSTREAM &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br>
+import:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from ASabc accept &nbsp; ANY<br>
+export:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; to &nbsp; ASabc announce AS-MACRO<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* CUSTOMER &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br>
+import:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from ASdef accept &nbsp; AS-MACRO<br>
+export:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; to &nbsp; ASdef announce ANY<br>
+// RIR AS HEADER - end <br>
+// PEERINGS (automatically written - starts with delimiter)<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* PEERINGS &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br>
+import:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from ASmno accept &nbsp; AS-THEIR-MACRO<br>
+export:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; to &nbsp; ASmno announce AS-MACRO<br>
+// PEERINGS (automatically written - ends with NO delimiter)<br>
+// RIR AS FOOTER - start <br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; peering policy<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mail: peering@company.com<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VIX peering<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IP: 193.203.0.xx<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IP: 193.203.0.yy<br>
+// RIR AS FOOTER - ends with NO delimiter<br>
+// CONTACT INFO (automatically written - starts with delimiter)<br>
+remarks:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*************************<br>
+admin-c:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ADMINxyz-RIPE<br>
+tech-c:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NOCxyz-RIPE<br>
+mnt-by:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ASxyz-MNT<br>
+changed:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; someone@company.com 20070703<br>
+source:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; RIPE">AS layout example</a> | <a href="%s/documentation.cgi?de_3#companies" target="_blank">template</a></b>)
+        <script language="javascript">
+        var Tips = new Tips($$('.HelpAS'), {
+            fixed: true,
+            initialize:function(){
+                this.fx = new Fx.Style(this.toolTip, 'opacity', {duration: 500, wait: false}).set(0);
+            },
+            onShow: function(toolTip) {
+                this.fx.start(1);
+            },
+            onHide: function(toolTip) {
+                this.fx.start(0);
+            }
+        });
+        </script> 
+        </td>""" % ( cgi_dir )
+    print """</tr><tr>"""
+    print """<td colspan=2>
+        <textarea id="ripe_header" name=ripe_header id="ripe_header" class="code_eingabefeld" wrap="off">%s</textarea></td>""" % (details[0][9])
+    print """</tr><tr>"""
+    print """<td colspan=2>RIR AS trailer</td>"""
+    print """</tr><tr>"""
+    print """<td colspan=2>
+        <textarea id="ripe_trailer" name=ripe_trailer id="ripe_trailer" class="code_eingabefeld" wrap="off">%s</textarea></td>""" % (details[0][10])
+    print """</tr><tr>"""
+
+
+def main():
+    """entry point for executing IP@LL - edit vrf details"""
+
+    ### definitions of variables
+    global id, conn, rights, cgi_dir
+    name = descr = street = postal_code = city = country = as_set = ""
+    ripe_header = ripe_trailer = ripe_password = ripe_mntby = ripe_admin_c = ripe_tech_c = ripe_notify = delete_mail = " "
+    street_number = as_nr = 0
+    is_lir = send_delete_mail = "off"
+    formdata = cgi.FieldStorage()
+
+    if os.environ.has_key('QUERY_STRING') and os.environ['QUERY_STRING'] != "":
+        qs = os.environ['QUERY_STRING']
+        if len(qs.split("&")) == 1:
+            id = str(qs.split("&")[0])
+        else:
+            id = 0
+
+    try:
+        if formdata.has_key("id"):
+            id = int(formdata['id'].value)
+        if formdata.has_key("name"):
+            name = str(formdata['name'].value)
+        if formdata.has_key("descr"):
+            descr = str(formdata['descr'].value)
+        if formdata.has_key("street"):
+            street = str(formdata['street'].value)
+        if formdata.has_key("postal_code"):
+            postal_code = str(formdata['postal_code'].value)
+        if formdata.has_key("city"):
+            city = str(formdata['city'].value)
+        if formdata.has_key("country"):
+            country = str(formdata['country'].value)
+        if formdata.has_key("as_set"):
+            as_set = str(formdata['as_set'].value)
+        if formdata.has_key("ripe_header"):
+            ripe_header = str(formdata['ripe_header'].value)
+        if formdata.has_key("ripe_trailer"):
+            ripe_trailer = str(formdata['ripe_trailer'].value)
+        if formdata.has_key("ripe_password"):
+            ripe_password = str(formdata['ripe_password'].value)
+        if formdata.has_key("ripe_mntby"):
+            ripe_mntby = str(formdata['ripe_mntby'].value)
+        if formdata.has_key("ripe_admin_c"):
+            ripe_admin_c = str(formdata['ripe_admin_c'].value)
+        if formdata.has_key("ripe_tech_c"):
+            ripe_tech_c = str(formdata['ripe_tech_c'].value)
+        if formdata.has_key("ripe_notify"):
+            ripe_notify = str(formdata['ripe_notify'].value)
+        if formdata.has_key("street_number"):
+            street_number = int(formdata['street_number'].value)
+        if formdata.has_key("as_nr"):
+            as_nr = int(formdata['as_nr'].value)
+        if formdata.has_key("is_lir"):
+            is_lir = str(formdata['is_lir'].value)
+        if formdata.has_key("send_delete_mail"):
+            send_delete_mail = str(formdata['send_delete_mail'].value)
+        if formdata.has_key("delete_mail"):
+            delete_mail = str(formdata['delete_mail'].value)
+    except:
+        print """<script language="javascript">alert("Please fill out all fields marked with asterisks!"); history.back();</script> """
+        return
+    ### create database connection object
+    cfg = ConfigObj("ipall.cfg")
+    db_host = cfg['Database']['db_host']
+    db_user = cfg['Database']['db_user']
+    db_pw = cfg['Database']['db_pw']
+    db = cfg['Database']['db']
+    conn = DBmy.db(db_host, db_user, db_pw, db)
+
+    ### User
+    s = Session(conn)
+    current_user = s.check_user()
+    HTML.simple_header()
+    if current_user == "":
+        HTML.simple_redirect_header(cfg['Server']['web_dir'])
+        return
+    else:
+        HTML.body()
+    user = IpallUser.User(current_user)
+    group, company_id  = user.get_group_id()
+    rights = user.get_rights()
+    cgi_dir = cfg['Server']['cgi_dir']
+
+    if group == 0:
+        HTML.restriction_message()
+        return
+
+    if formdata.has_key("save"):
+        print "<br>"
+            
+        if descr != "" and descr != "NULL": 
+            descr = descr.rstrip()
+        if send_delete_mail == "on":  send_delete_mail = 1;
+        else:   send_delete_mail = 0;
+        if delete_mail == "" or delete_mail != "NULL": 
+            delete_mail = "'" + delete_mail + "'"
+        if as_set == "" or as_set != "NULL": 
+            as_set = "'" + as_set + "'"
+        if ripe_header != "" and ripe_header != "NULL": 
+            ripe_header = "'" + ripe_header.lstrip().rstrip() + "'"
+        if ripe_trailer != "" and ripe_trailer != "NULL":
+            ripe_trailer = "'" + ripe_trailer.lstrip().rstrip() + "'"
+        if ripe_password != "" and ripe_password != "NULL": 
+            ripe_password = "'" + ripe_password.lstrip().rstrip() + "'"
+        if ripe_mntby != "" and ripe_mntby != "NULL": 
+            ripe_mntby = "'" + ripe_mntby.lstrip().rstrip() + "'"
+        if ripe_admin_c != "" and ripe_admin_c != "NULL": 
+            ripe_admin_c = "'" + ripe_admin_c.lstrip().rstrip() + "'"
+        if ripe_tech_c != "" and ripe_tech_c != "NULL": 
+            ripe_tech_c = "'" + ripe_tech_c.lstrip().rstrip() + "'"
+        if ripe_notify != "" and ripe_notify != "NULL": 
+            ripe_notify = "'" + ripe_notify.lstrip().rstrip() + "'"
+        if is_lir == "on":  is_lir = 1;
+        else:   is_lir = 0;
+
+            
+        #print name, descr, street, postal_code, city, country, as_set,
+        #print ripe_header, ripe_trailer, ripe_password, ripe_mntby, ripe_admin_c, ripe_tech_c, ripe_notify
+        #print street_number, as_nr
+
+        sql_company = """UPDATE companies SET name='%s', description='%s', street='%s', street_number=%u, postal_code='%s',
+            city='%s', country='%s', as_nr=%u, as_set=%s, ripe_header=%s, ripe_trailer=%s, ripe_password=%s, ripe_mntby=%s,
+            ripe_admin_c=%s, ripe_tech_c=%s, ripe_notify=%s, is_lir=%u, send_delete_mail=%u, delete_mail=%s WHERE id=%u """ \
+            % (name, descr, street, street_number, postal_code, city, country, as_nr, as_set, ripe_header, ripe_trailer, \
+                ripe_password, ripe_mntby, ripe_admin_c, ripe_tech_c, ripe_notify, is_lir, send_delete_mail, delete_mail, \
+                int(id) )
+        #print sql_company
+        company_ok = conn.update_data(sql_company)
+
+        ### LOGGING
+        log_string = sql_company
+        sql_log = """INSERT INTO nms_log VALUES ('', '%s', SYSDATE(), 'companies', "%s", %u)""" % (current_user, log_string, int(id))
+        log = conn.insert_data(sql_log)
+        
+        if company_ok == 1:
+            uri = "%s/mgmt_company.cgi" % (cgi_dir)
+            HTML.redirect(uri)
+            #print "<br>no error"
+        else:
+            HTML.error_message("An error has occured!")
+            
+    else: ### SAVE key was not pressed
+        query = """SELECT name, description, street, street_number, postal_code, city, country, as_nr, as_set,
+            ripe_header, ripe_trailer, ripe_password, ripe_mntby, ripe_admin_c, ripe_tech_c, ripe_notify, is_lir, 
+            send_delete_mail, delete_mail FROM companies WHERE id=%u """ % (int(id))
+        details = conn.get_data(query)
+
+        if details == () or details == None:
+            HTML.error_message("Nothing to display!")
+            return
+        else:
+            if group != 1 and rights[1] != 1:
+                company_perm = 0
+            else:
+                company_perm = 1
+                #print company_perm
+
+            if company_perm != 1:
+                HTML.restriction_message()
+                return
+
+            print """<form name="edit_company" method=POST action="company_edit.cgi" 
+                onSubmit="return check_company()">"""
+            print """<div class=TextPurple>"""
+            print """<table class=table_main border=0>"""
+            print """<tr>"""
+            print """<td colspan=2 class=TextPurpleBoldBig>Edit company details<br>&nbsp;</td>"""
+            print """</tr>"""
+            print """<tr class=lightPurple3 height=20>"""
+            print """<td width=200px class=TextPurpleBold>%s</td>""" % details[0][0]
+            print """<td>&nbsp;</td>"""
+            print """</tr><tr>"""
+
+            print_company_form(id, details, group)	
+
+            print """<tr>"""
+            print """<td colspan=2><br>* &nbsp;&nbsp;&nbsp; required field
+                <br>** &nbsp; required when "Send mail on deleting a prefix" is checked
+                <br>*** required when "Company is LIR" is checked
+                </td>"""
+            print """</tr><tr>"""
+            print """<td colspan=2>&nbsp;</td>"""
+            print """</tr><tr>"""
+            print """<td colspan=2><input type=submit name=save value=save class=button></td>"""
+            print """</tr>"""
+            print """<tr>"""
+            print """<td colspan=2 align=right>"""
+            print """<a href="%s/mgmt_company.cgi" class=LinkPurpleBold> << back </a>""" % (cgi_dir)
+            print """</td></tr>""" 
+            print """</table>"""
+            print """</div>"""
+            print """</form>"""
+
+
+    HTML.main_footer()
+
+main()
